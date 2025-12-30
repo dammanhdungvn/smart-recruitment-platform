@@ -253,7 +253,7 @@ const withdrawApplication = async (applicationId, userId) => {
   }
 
   if (["rejected", "withdrawn", "offered"].includes(application.status)) {
-    const err = new Error("Application cannot be withdrawn");
+    const err = new Error("Cannot withdraw this application");
     err.statusCode = 400;
     throw err;
   }

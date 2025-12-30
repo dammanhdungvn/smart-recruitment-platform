@@ -28,7 +28,10 @@ const JobCard: React.FC<JobCardProps> = ({
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    navigate(`/candidate/jobs/${job.id}`);
+    // Only navigate if no apply button shown (view-only mode)
+    if (!showApplyButton) {
+      navigate(`/candidate/jobs/${job.id}`);
+    }
   };
 
   const handleApplyClick = (e: React.MouseEvent) => {
@@ -38,13 +41,18 @@ const JobCard: React.FC<JobCardProps> = ({
     }
   };
 
+  const handleViewDetails = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/candidate/jobs/${job.id}`);
+  };
+
   return (
     <Card
       sx={{
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        cursor: "pointer",
+        cursor: showApplyButton ? "default" : "pointer",
         transition: "transform 0.2s, box-shadow 0.2s",
         "&:hover": {
           transform: "translateY(-4px)",
@@ -94,12 +102,23 @@ const JobCard: React.FC<JobCardProps> = ({
       </CardContent>
 
       {showApplyButton && onApply && (
-        <CardActions>
+        <CardActions
+          onClick={(e) => e.stopPropagation()}
+          sx={{ gap: 1, px: 2, pb: 2 }}
+        >
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={handleViewDetails}
+            sx={{ flex: 1 }}
+          >
+            Chi tiết
+          </Button>
           <Button
             size="small"
             variant="contained"
-            fullWidth
             onClick={handleApplyClick}
+            sx={{ flex: 1 }}
           >
             Ứng tuyển
           </Button>

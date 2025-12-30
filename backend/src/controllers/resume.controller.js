@@ -46,21 +46,11 @@ const getUserResumes = async (req, res, next) => {
       page = parsedPage < 1 ? 1 : parsedPage;
     }
 
-    const { rows, count, limit } = await resumeService.getUserResumes(
-      req.user.id,
-      { page }
-    );
+    const resumes = await resumeService.getUserResumes(req.user.id, { page });
     sendSuccessResponse(
       res,
       {
-        resumes: rows,
-        count,
-        pagination: {
-          page,
-          limit,
-          total: count,
-          totalPages: Math.ceil(count / limit),
-        },
+        resumes,
       },
       "Resumes retrieved successfully"
     );

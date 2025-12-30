@@ -26,6 +26,10 @@ describe("AuthContext", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    // Spy on localStorage methods
+    vi.spyOn(Storage.prototype, "setItem");
+    vi.spyOn(Storage.prototype, "getItem");
+    vi.spyOn(Storage.prototype, "removeItem");
   });
 
   const wrapper = ({ children }: { children: ReactNode }) => (

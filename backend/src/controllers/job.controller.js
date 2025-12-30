@@ -71,7 +71,9 @@ const createJob = async (req, res, next) => {
 const getAllJobs = async (req, res, next) => {
   try {
     const pageParam = req.query.page;
+    const limitParam = req.query.limit;
     let page = 1;
+    let limit;
 
     if (pageParam !== undefined) {
       const parsedPage = Number.parseInt(pageParam, 10);
@@ -79,6 +81,14 @@ const getAllJobs = async (req, res, next) => {
         return sendErrorResponse(res, "Invalid page parameter", 400);
       }
       page = parsedPage < 1 ? 1 : parsedPage;
+    }
+
+    if (limitParam !== undefined) {
+      const parsedLimit = Number.parseInt(limitParam, 10);
+      if (Number.isNaN(parsedLimit) || parsedLimit < 1) {
+        return sendErrorResponse(res, "Invalid limit parameter", 400);
+      }
+      limit = parsedLimit;
     }
 
     const filters = {
@@ -89,9 +99,14 @@ const getAllJobs = async (req, res, next) => {
       skills: req.query.skills,
       search: req.query.search,
       page,
+      limit,
     };
 
-    const { rows, count, limit } = await jobService.getAllJobs({
+    const {
+      rows,
+      count,
+      limit: actualLimit,
+    } = await jobService.getAllJobs({
       ...filters,
       withCount: true,
     });
@@ -99,9 +114,9 @@ const getAllJobs = async (req, res, next) => {
 
     const pagination = {
       page,
-      limit,
+      limit: actualLimit,
       total: count,
-      totalPages: Math.ceil(count / limit),
+      totalPages: Math.ceil(count / actualLimit),
     };
 
     sendSuccessResponse(

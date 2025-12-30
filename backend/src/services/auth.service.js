@@ -96,7 +96,7 @@ const updateProfile = async (userId, updateData) => {
   }
 
   // Update allowed fields
-  const allowedFields = ["full_name", "phone", "avatar"];
+  const allowedFields = ["full_name", "phone", "avatar", "company"];
   allowedFields.forEach((field) => {
     if (updateData[field] !== undefined) {
       user[field] = updateData[field];

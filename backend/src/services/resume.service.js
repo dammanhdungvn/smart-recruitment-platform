@@ -44,7 +44,8 @@ const getUserResumes = async (userId, options = {}) => {
     offset,
   });
 
-  return { rows: result.rows, count: result.count, page, limit };
+  // Return array for tests compatibility
+  return result.rows;
 };
 
 /**

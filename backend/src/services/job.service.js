@@ -1,7 +1,7 @@
 const { Job, User, Application } = require("../models");
 const { Op } = require("sequelize");
 
-const PAGE_SIZE = 60;
+const PAGE_SIZE = 10;
 
 /**
  * Create new job
@@ -31,7 +31,7 @@ const createJob = async (userId, jobData) => {
  */
 const getAllJobs = async (filters = {}) => {
   const page = filters.page || 1;
-  const limit = PAGE_SIZE;
+  const limit = filters.limit || PAGE_SIZE;
   const offset = (page - 1) * limit;
   const where = { status: "open" };
 

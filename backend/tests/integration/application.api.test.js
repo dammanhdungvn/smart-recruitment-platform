@@ -384,7 +384,9 @@ describe("Application API Integration Tests", () => {
         .expect(400);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.message).toContain("cannot be withdrawn");
+      expect(response.body.message).toContain(
+        "Cannot withdraw this application"
+      );
     });
 
     it("should reject withdrawal by non-owner", async () => {

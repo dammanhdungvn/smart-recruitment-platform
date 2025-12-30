@@ -75,8 +75,32 @@ router.get("/profile", authenticate, authController.getProfile);
  *     tags: [Auth]
  *     summary: Update user profile
  *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               full_name:
+ *                 type: string
+ *                 description: User's full name
+ *               phone:
+ *                 type: string
+ *                 description: User's phone number
+ *               avatar:
+ *                 type: string
+ *                 description: URL to user's avatar image
+ *               company:
+ *                 type: string
+ *                 description: Company name (for recruiters)
  *     responses:
- *       200: { description: Profile updated }
+ *       200:
+ *         description: Profile updated successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
  */
 router.put("/profile", authenticate, authController.updateProfile);
 router.post(
