@@ -32,7 +32,8 @@ const ApplicationsPage: React.FC = () => {
     setLoading(true);
     try {
       const response = await applicationService.getUserApplications();
-      setApplications(response.data);
+      const apps = response.data?.applications || [];
+      setApplications(apps);
     } catch (error: any) {
       toast.error(
         error.response?.data?.message || "Không thể tải danh sách đơn ứng tuyển"
@@ -99,11 +100,25 @@ const ApplicationsPage: React.FC = () => {
                   return (
                     <TableRow key={app.id}>
                       <TableCell>
-                        <Typography variant="body1">
-                          {app.Job?.job_title || "N/A"}
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            wordBreak: "break-word",
+                            whiteSpace: "normal",
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          {app.job?.job_title ||
+                            app.Job?.job_title ||
+                            app.job_title ||
+                            "N/A"}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {app.Job?.city}
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
+                        >
+                          {app.job?.city || app.Job?.city || app.city || ""}
                         </Typography>
                       </TableCell>
                       <TableCell>{formatDate(app.applied_at)}</TableCell>

@@ -1,6 +1,10 @@
 import api from './api';
 import type { ApiResponse } from '../types/api.types';
-import type { Application, ApplicationFormData, UpdateApplicationStatusData } from '../types/application.types';
+import type {
+  Application,
+  ApplicationFormData,
+  UpdateApplicationStatusData,
+} from '../types/application.types';
 
 export const applicationService = {
   // Apply for job
@@ -10,7 +14,9 @@ export const applicationService = {
   },
 
   // Get user's applications (candidate)
-  getUserApplications: async (): Promise<ApiResponse<Application[]>> => {
+  getUserApplications: async (): Promise<
+    ApiResponse<{ applications: Application[]; count: number }>
+  > => {
     const response = await api.get('/applications');
     return response.data;
   },
@@ -28,7 +34,9 @@ export const applicationService = {
   },
 
   // Get job applications (recruiter)
-  getJobApplications: async (jobId: number): Promise<ApiResponse<Application[]>> => {
+  getJobApplications: async (
+    jobId: number
+  ): Promise<ApiResponse<{ applications: Application[]; count: number }>> => {
     const response = await api.get(`/applications/job/${jobId}`);
     return response.data;
   },

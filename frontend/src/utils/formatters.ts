@@ -24,7 +24,11 @@ export const formatSalary = (min?: number, max?: number, unit: string = 'VND'): 
 };
 
 export const formatDate = (dateString: string): string => {
+  if (!dateString) return 'N/A';
+
   const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return 'N/A';
+
   const now = new Date();
   const diffTime = Math.abs(now.getTime() - date.getTime());
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));

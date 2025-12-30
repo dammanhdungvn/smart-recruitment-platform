@@ -50,7 +50,7 @@ const RecruiterApplicationsPage: React.FC = () => {
       const response = await applicationService.getJobApplications(
         Number(jobId)
       );
-      setApplications(response.data);
+      setApplications(response.data?.applications || []);
     } catch (error: any) {
       toast.error(
         error.response?.data?.message || "Không thể tải danh sách ứng viên"

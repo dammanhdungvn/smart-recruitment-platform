@@ -24,7 +24,20 @@ export const jobService = {
   // Get categories for filters
   getCategories: async (): Promise<string[]> => {
     const response = await api.get('/jobs/categories');
-    return response.data.data.categories || [];
+    const rawCategories: unknown = response.data?.data?.categories || [];
+
+    // Clean up leading commas and surrounding whitespace before sending to UI
+    const cleaned = Array.isArray(rawCategories)
+      ? rawCategories
+          .map((item) =>
+            typeof item === 'string'
+              ? item.replace(/^\s*,\s*/, '').trim()
+              : ''
+          )
+          .filter((item) => item.length > 0)
+      : [];
+
+    return cleaned;
   },
 
   // Create job (recruiter only)
