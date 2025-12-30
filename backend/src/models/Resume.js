@@ -41,6 +41,11 @@ const Resume = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    status: {
+      type: DataTypes.ENUM("pending", "approved", "rejected"),
+      defaultValue: "pending",
+      allowNull: false,
+    },
   },
   {
     tableName: "resumes",

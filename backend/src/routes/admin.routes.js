@@ -109,6 +109,41 @@ router.patch("/users/:id/status", adminController.updateUserStatus);
 
 /**
  * @swagger
+ * /api/admin/users/{id}/role:
+ *   patch:
+ *     summary: Update user role
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - role
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum: [candidate, recruiter, admin]
+ *     responses:
+ *       200:
+ *         description: User role updated successfully
+ *       404:
+ *         description: User not found
+ */
+router.patch("/users/:id/role", adminController.updateUserRole);
+
+/**
+ * @swagger
  * /api/admin/users/{id}:
  *   delete:
  *     summary: Delete user
@@ -226,6 +261,41 @@ router.delete("/jobs/:id", adminController.deleteJob);
  *         description: Forbidden - Admin role required
  */
 router.get("/resumes", adminController.getAllResumes);
+
+/**
+ * @swagger
+ * /api/admin/resumes/{id}/status:
+ *   patch:
+ *     summary: Update resume status
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Resume ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [pending, approved, rejected]
+ *     responses:
+ *       200:
+ *         description: Resume status updated successfully
+ *       404:
+ *         description: Resume not found
+ */
+router.patch("/resumes/:id/status", adminController.updateResumeStatus);
 
 /**
  * @swagger

@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
 const config = require("./config/config");
@@ -31,8 +32,9 @@ app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // API routes
 app.use("/api", routes);
 
-// Static files for uploads
+// Static files for uploads and CV storage
 app.use("/uploads", express.static("uploads"));
+app.use("/data/cv", express.static(path.join(__dirname, "../data/cv")));
 
 // 404 handler
 app.use(notFound);

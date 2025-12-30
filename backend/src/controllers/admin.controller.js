@@ -108,11 +108,7 @@ const getAllUsers = async (req, res, next) => {
 const updateUserStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
-
-    if (!["active", "inactive"].includes(status)) {
-      return sendErrorResponse(res, "Invalid status value", 400);
-    }
+    const { is_active } = req.body;
 
     const user = await User.findByPk(id);
     if (!user) {
@@ -124,7 +120,7 @@ const updateUserStatus = async (req, res, next) => {
       return sendErrorResponse(res, "Cannot modify your own account", 400);
     }
 
-    user.status = status;
+    user.is_active = is_active;
     await user.save();
 
     const userResponse = user.toJSON();
@@ -134,6 +130,44 @@ const updateUserStatus = async (req, res, next) => {
       res,
       { user: userResponse },
       "User status updated successfully"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Update user role
+ */
+const updateUserRole = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    if (!["candidate", "recruiter", "admin"].includes(role)) {
+      return sendErrorResponse(res, "Invalid role value", 400);
+    }
+
+    const user = await User.findByPk(id);
+    if (!user) {
+      return sendErrorResponse(res, "User not found", 404);
+    }
+
+    // Prevent admin from changing their own role
+    if (user.id === req.user.id) {
+      return sendErrorResponse(res, "Cannot modify your own role", 400);
+    }
+
+    user.role = role;
+    await user.save();
+
+    const userResponse = user.toJSON();
+    delete userResponse.password;
+
+    sendSuccessResponse(
+      res,
+      { user: userResponse },
+      "User role updated successfully"
     );
   } catch (error) {
     next(error);
@@ -293,6 +327,32 @@ const deleteResume = async (req, res, next) => {
 };
 
 /**
+ * Update resume status
+ */
+const updateResumeStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!["pending", "approved", "rejected"].includes(status)) {
+      return sendErrorResponse(res, "Invalid status value", 400);
+    }
+
+    const resume = await Resume.findByPk(id);
+    if (!resume) {
+      return sendErrorResponse(res, "Resume not found", 404);
+    }
+
+    resume.status = status;
+    await resume.save();
+
+    sendSuccessResponse(res, { resume }, "Resume status updated successfully");
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Get all applications with pagination
  */
 const getAllApplications = async (req, res, next) => {
@@ -360,10 +420,12 @@ module.exports = {
   getStats,
   getAllUsers,
   updateUserStatus,
+  updateUserRole,
   deleteUser,
   getAllJobs,
   deleteJob,
   getAllResumes,
+  updateResumeStatus,
   deleteResume,
   getAllApplications,
 };

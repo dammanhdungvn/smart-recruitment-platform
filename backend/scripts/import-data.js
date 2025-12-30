@@ -8,7 +8,8 @@ const logger = require("../src/utils/logger");
 
 // Paths
 const DATA_DIR = path.join(__dirname, "../../data");
-const JOBS_CSV = path.join(DATA_DIR, "jobs.csv");
+const CODE_FILTER_DIR = path.join(__dirname, "../../code_filter");
+const JOBS_CSV = path.join(CODE_FILTER_DIR, "jobs_with_category.csv"); // Use categorized jobs
 const RESUMES_CSV = path.join(DATA_DIR, "resumes.csv");
 const CV_DIR = path.join(DATA_DIR, "cv");
 
@@ -154,6 +155,7 @@ const importJobs = async (recruiterId) => {
       experience: clip(row.experience || row.experience_level || "", 48),
       skills: row.skills || row.keywords || "",
       job_fields: clipOrDefault(row.job_fields || row.category || "", 255, ""),
+      category: row.category || "BUSINESS-DEVELOPMENT",
       description:
         row.combined_text ||
         row.description ||
@@ -221,10 +223,14 @@ const importResumes = async (candidateId) => {
         cvFilePath = path.join(CV_DIR, category, cvFileName);
       }
 
+      // Convert to relative path from project root
+      const projectRoot = path.join(__dirname, "../..");
+      const relativePath = path.relative(projectRoot, cvFilePath);
+
       await Resume.create({
         user_id: candidateId,
         file_name: cvFileName,
-        file_path: cvFilePath,
+        file_path: relativePath, // Store relative path
         file_size: fs.existsSync(cvFilePath) ? fs.statSync(cvFilePath).size : 0,
         category,
         resume_text: row.cleaned_text || row.Resume_str || "",
