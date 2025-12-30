@@ -68,30 +68,36 @@ const AdminDashboard: React.FC = () => {
           </Alert>
         )}
 
-        {/* KPI Cards */}
+        {/* Main Stats Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatsCard
               title="Total Users"
-              value={stats?.totalUsers || 0}
+              value={stats?.users?.total || 0}
               icon={<PeopleIcon />}
               color="#1976d2"
               loading={loading}
+              subtitle={`${stats?.users?.candidates || 0} Candidates, ${
+                stats?.users?.recruiters || 0
+              } Recruiters`}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatsCard
               title="Total Jobs"
-              value={stats?.totalJobs || 0}
+              value={stats?.jobs?.total || 0}
               icon={<WorkIcon />}
               color="#2e7d32"
               loading={loading}
+              subtitle={`${stats?.jobs?.active || 0} Active, ${
+                stats?.jobs?.closed || 0
+              } Closed`}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatsCard
               title="Total Resumes"
-              value={stats?.totalResumes || 0}
+              value={stats?.resumes?.total || 0}
               icon={<DescriptionIcon />}
               color="#ed6c02"
               loading={loading}
@@ -100,17 +106,18 @@ const AdminDashboard: React.FC = () => {
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatsCard
               title="Total Applications"
-              value={stats?.totalApplications || 0}
+              value={stats?.applications?.total || 0}
               icon={<AssignmentIcon />}
               color="#9c27b0"
               loading={loading}
+              subtitle={`${stats?.applications?.pending || 0} Pending`}
             />
           </Grid>
         </Grid>
 
-        {/* Charts Placeholder */}
-        <Grid container spacing={3}>
-          <Grid size={{ xs: 12, md: 8 }}>
+        {/* Detailed Breakdown */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Paper
               elevation={0}
               sx={{
@@ -118,23 +125,67 @@ const AdminDashboard: React.FC = () => {
                 borderRadius: "16px",
                 border: "1px solid rgba(0, 0, 0, 0.08)",
                 boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
-                minHeight: 300,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
               }}
             >
-              <Box sx={{ textAlign: "center" }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                  Jobs Over Time
-                </Typography>
-                <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                  Chart visualization coming soon
-                </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+                User Breakdown
+              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    Candidates
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 600, color: "#2e7d32" }}
+                  >
+                    {stats?.users?.candidates || 0}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    Recruiters
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 600, color: "#1976d2" }}
+                  >
+                    {stats?.users?.recruiters || 0}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    pt: 1,
+                    borderTop: "1px solid rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    Total Users
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    {stats?.users?.total || 0}
+                  </Typography>
+                </Box>
               </Box>
             </Paper>
           </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
+
+          <Grid size={{ xs: 12, md: 6 }}>
             <Paper
               elevation={0}
               sx={{
@@ -142,19 +193,79 @@ const AdminDashboard: React.FC = () => {
                 borderRadius: "16px",
                 border: "1px solid rgba(0, 0, 0, 0.08)",
                 boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
-                minHeight: 300,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
               }}
             >
-              <Box sx={{ textAlign: "center" }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                  Applications by Status
-                </Typography>
-                <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                  Chart visualization coming soon
-                </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+                Application Status
+              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    Pending
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 600, color: "#ed6c02" }}
+                  >
+                    {stats?.applications?.pending || 0}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    Accepted
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 600, color: "#2e7d32" }}
+                  >
+                    {stats?.applications?.accepted || 0}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    Rejected
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 600, color: "#d32f2f" }}
+                  >
+                    {stats?.applications?.rejected || 0}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    pt: 1,
+                    borderTop: "1px solid rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    Total Applications
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    {stats?.applications?.total || 0}
+                  </Typography>
+                </Box>
               </Box>
             </Paper>
           </Grid>

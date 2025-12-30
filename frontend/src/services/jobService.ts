@@ -3,7 +3,7 @@ import type { ApiResponse } from '../types/api.types';
 import type { Job, JobFilters, JobFormData, JobListResponse } from '../types/job.types';
 
 export const jobService = {
-  // Public job listing with pagination (page size 60)
+  // Public job listing with pagination (default page size 10, configurable)
   getJobs: async (filters: JobFilters): Promise<ApiResponse<JobListResponse>> => {
     const response = await api.get('/jobs', { params: filters });
     return response.data;

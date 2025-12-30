@@ -39,7 +39,7 @@ const UserManagement: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<UserListItem | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
-    type: "status" | "role" | null;
+    type: "status" | "delete" | null;
     title: string;
     message: string;
     newValue?: any;
@@ -87,30 +87,29 @@ const UserManagement: React.FC = () => {
   const handleToggleStatus = () => {
     if (!selectedUser) return;
 
-    const newStatus = !selectedUser.is_active;
+    const newStatus = selectedUser.is_active ? 'inactive' : 'active';
     setConfirmDialog({
       open: true,
       type: "status",
-      title: `${newStatus ? "Activate" : "Deactivate"} User`,
+      title: `${newStatus === 'active' ? "Activate" : "Deactivate"} User`,
       message: `Are you sure you want to ${
-        newStatus ? "activate" : "deactivate"
+        newStatus === 'active' ? "activate" : "deactivate"
       } ${selectedUser.full_name}? ${
-        !newStatus ? "This user will not be able to log in." : ""
+        newStatus === 'inactive' ? "This user will not be able to log in." : ""
       }`,
       newValue: newStatus,
     });
     handleMenuClose();
   };
 
-  const handleChangeRole = (newRole: string) => {
+  const handleDeleteUser = () => {
     if (!selectedUser) return;
 
     setConfirmDialog({
       open: true,
-      type: "role",
-      title: "Change User Role",
-      message: `Are you sure you want to change ${selectedUser.full_name}'s role to ${newRole}?`,
-      newValue: newRole,
+      type: "delete",
+      title: "Delete User",
+      message: `Are you sure you want to delete ${selectedUser.full_name}? This action cannot be undone.`,
     });
     handleMenuClose();
   };
@@ -123,18 +122,16 @@ const UserManagement: React.FC = () => {
 
       if (confirmDialog.type === "status") {
         await adminService.updateUserStatus(selectedUser.id, {
-          is_active: confirmDialog.newValue,
+          status: confirmDialog.newValue,
         });
         toast.success(
           `User ${
-            confirmDialog.newValue ? "activated" : "deactivated"
+            confirmDialog.newValue === 'active' ? "activated" : "deactivated"
           } successfully`
         );
-      } else if (confirmDialog.type === "role") {
-        await adminService.updateUserRole(selectedUser.id, {
-          role: confirmDialog.newValue,
-        });
-        toast.success("User role updated successfully");
+      } else if (confirmDialog.type === "delete") {
+        await adminService.deleteUser(selectedUser.id);
+        toast.success("User deleted successfully");
       }
 
       setConfirmDialog({ open: false, type: null, title: "", message: "" });
@@ -332,14 +329,11 @@ const UserManagement: React.FC = () => {
           <MenuItem onClick={handleToggleStatus}>
             {selectedUser?.is_active ? "Deactivate User" : "Activate User"}
           </MenuItem>
-          <MenuItem onClick={() => handleChangeRole("candidate")}>
-            Change Role to Candidate
-          </MenuItem>
-          <MenuItem onClick={() => handleChangeRole("recruiter")}>
-            Change Role to Recruiter
-          </MenuItem>
-          <MenuItem onClick={() => handleChangeRole("admin")}>
-            Change Role to Admin
+          <MenuItem 
+            onClick={handleDeleteUser}
+            sx={{ color: 'error.main' }}
+          >
+            Delete User
           </MenuItem>
         </Menu>
 
@@ -362,7 +356,9 @@ const UserManagement: React.FC = () => {
             confirmDialog.type === "status" && !confirmDialog.newValue
               ? "danger"
               : "warning"
-          }
+          }delete" 
+              ? "danger"
+              : confirmDialog.type === "status" && confirmDialog.newValue === 'inactive'
           loading={actionLoading}
         />
       </Box>

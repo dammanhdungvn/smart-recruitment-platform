@@ -20,10 +20,4 @@ export interface ResumeUploadData {
 
 export interface ResumeListResponse {
   resumes: Resume[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
 }

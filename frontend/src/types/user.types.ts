@@ -5,6 +5,7 @@ export interface User {
   full_name: string;
   phone?: string;
   avatar?: string;
+  company?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -27,6 +28,7 @@ export interface UpdateProfileData {
   full_name?: string;
   phone?: string;
   avatar?: string;
+  company?: string;
 }
 
 export interface ChangePasswordData {

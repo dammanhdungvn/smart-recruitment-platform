@@ -8,6 +8,7 @@ interface StatsCardProps {
   icon: React.ReactNode;
   color: string;
   loading?: boolean;
+  subtitle?: string;
 }
 
 const StatsCard: React.FC<StatsCardProps> = ({
@@ -16,6 +17,7 @@ const StatsCard: React.FC<StatsCardProps> = ({
   icon,
   color,
   loading = false,
+  subtitle,
 }) => {
   if (loading) {
     return (
@@ -82,7 +84,14 @@ const StatsCard: React.FC<StatsCardProps> = ({
         {title}
       </Typography>
 
-      <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "baseline",
+          gap: 1,
+          mb: subtitle ? 0.5 : 0,
+        }}
+      >
         <Typography
           variant="h4"
           sx={{
@@ -95,6 +104,19 @@ const StatsCard: React.FC<StatsCardProps> = ({
         </Typography>
         <TrendingUpIcon sx={{ fontSize: 20, color: "success.main" }} />
       </Box>
+
+      {subtitle && (
+        <Typography
+          variant="caption"
+          sx={{
+            color: "text.secondary",
+            fontSize: "0.75rem",
+            display: "block",
+          }}
+        >
+          {subtitle}
+        </Typography>
+      )}
     </Paper>
   );
 };

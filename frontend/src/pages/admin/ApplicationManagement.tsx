@@ -57,7 +57,7 @@ const ApplicationManagement: React.FC = () => {
       setError(null);
       const response = await adminService.getApplications(page + 1);
       setApplications(response.data.applications || []);
-      setTotalApplications(response.data.count || 0);
+      setTotalApplications(response.data.pagination?.total || 0);
     } catch (err: any) {
       setError(err?.response?.data?.message || "Failed to load applications");
       console.error("Failed to load applications:", err);

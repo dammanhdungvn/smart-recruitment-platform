@@ -93,23 +93,40 @@ const JobManagement: React.FC = () => {
     handleMenuClose();
   };
 
+  const handleDeleteJob = () => {
+    if (!selectedJob) return;
+
+    setConfirmDialog({
+      open: true,
+      title: `Delete Job`,
+      message: `Are you sure you want to delete "${selectedJob.job_title}"? This action cannot be undone.`,
+      newStatus: "DELETE",
+    });
+    handleMenuClose();
+  };
+
   const handleConfirmAction = async () => {
-    if (!selectedJob || !confirmDialog.newStatus) return;
+    if (!selectedJob) return;
 
     try {
       setActionLoading(true);
-      await adminService.updateJobStatus(
-        selectedJob.id,
-        confirmDialog.newStatus
-      );
-      toast.success("Job status updated successfully");
+
+      if (confirmDialog.newStatus === "DELETE") {
+        await adminService.deleteJob(selectedJob.id);
+        toast.success("Job deleted successfully");
+      } else if (confirmDialog.newStatus) {
+        await adminService.updateJobStatus(
+          selectedJob.id,
+          confirmDialog.newStatus
+        );
+        toast.success("Job status updated successfully");
+      }
+
       setConfirmDialog({ open: false, title: "", message: "" });
       loadJobs();
     } catch (err: any) {
-      toast.error(
-        err?.response?.data?.message || "Failed to update job status"
-      );
-      console.error("Failed to update status:", err);
+      toast.error(err?.response?.data?.message || "Failed to perform action");
+      console.error("Failed to perform action:", err);
     } finally {
       setActionLoading(false);
     }
@@ -312,6 +329,9 @@ const JobManagement: React.FC = () => {
           </MenuItem>
           <MenuItem onClick={() => handleUpdateStatus("draft")}>
             Mark as Draft
+          </MenuItem>
+          <MenuItem onClick={handleDeleteJob} sx={{ color: "error.main" }}>
+            Delete Job
           </MenuItem>
         </Menu>
 

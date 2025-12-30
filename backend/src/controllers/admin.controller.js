@@ -245,7 +245,7 @@ const getAllResumes = async (req, res, next) => {
       include: [
         {
           model: User,
-          as: "user",
+          as: "candidate",
           attributes: ["id", "full_name", "email"],
         },
       ],
@@ -312,7 +312,7 @@ const getAllApplications = async (req, res, next) => {
       include: [
         {
           model: User,
-          as: "user",
+          as: "candidate",
           attributes: ["id", "full_name", "email"],
         },
         {

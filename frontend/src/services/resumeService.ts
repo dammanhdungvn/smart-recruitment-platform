@@ -13,7 +13,7 @@ export const resumeService = {
     return response.data;
   },
 
-  // Get user's resumes with pagination (page size 60)
+  // Get user's resumes (backend returns all resumes without pagination)
   getResumes: async (page: number = 1): Promise<ApiResponse<ResumeListResponse>> => {
     const response = await api.get('/resumes', { params: { page } });
     return response.data;

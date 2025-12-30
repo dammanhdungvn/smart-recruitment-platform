@@ -1,8 +1,23 @@
 export interface AdminStats {
-  totalUsers: number;
-  totalJobs: number;
-  totalResumes: number;
-  totalApplications: number;
+  users: {
+    total: number;
+    candidates: number;
+    recruiters: number;
+  };
+  jobs: {
+    total: number;
+    active: number;
+    closed: number;
+  };
+  resumes: {
+    total: number;
+  };
+  applications: {
+    total: number;
+    pending: number;
+    accepted: number;
+    rejected: number;
+  };
 }
 
 export interface UserListItem {
@@ -15,7 +30,7 @@ export interface UserListItem {
 }
 
 export interface UpdateUserStatusData {
-  is_active: boolean;
+  status: 'active' | 'inactive';
 }
 
 export interface UpdateUserRoleData {

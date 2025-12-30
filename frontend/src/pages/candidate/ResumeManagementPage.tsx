@@ -65,14 +65,14 @@ const ResumeManagementPage: React.FC = () => {
     try {
       const response = await resumeService.getResumes(page);
       const list = response.data?.resumes || [];
-      const meta = response.data?.pagination || {
+      // Backend returns simple array, no pagination data
+      setResumes(list);
+      setPagination({
         page,
         limit: 60,
         total: list.length,
         totalPages: 1,
-      };
-      setResumes(list);
-      setPagination(meta);
+      });
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message || "Không thể tải danh sách CV"
