@@ -115,7 +115,9 @@ const ApplicationsPage: React.FC = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        {app.status === "pending" && (
+                        {["submitted", "pending", "reviewing"].includes(
+                          app.status
+                        ) && (
                           <Button
                             size="small"
                             color="error"

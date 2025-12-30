@@ -1,19 +1,26 @@
-import React from "react";
-import { Container, Typography, Box, Paper, Button } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Box, Typography, Paper, Button } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import { useAuth } from "../../contexts/AuthContext";
+import DashboardLayout from "../../components/layout/DashboardLayout";
+import PageHeader from "../../components/shared/PageHeader";
 
 const CandidateDashboard: React.FC = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Initialize dashboard
+  }, []);
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mt: 4, mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Chào mừng, {user?.full_name}!
-        </Typography>
+    <DashboardLayout role="candidate">
+      <Box>
+        <PageHeader
+          title="Dashboard"
+          subtitle={`Chào mừng trở lại, ${user?.full_name || "Ứng viên"}!`}
+        />
 
         <Grid container spacing={3} sx={{ mt: 2 }}>
           <Grid size={{ xs: 12, md: 4 }}>
@@ -62,7 +69,7 @@ const CandidateDashboard: React.FC = () => {
           </Grid>
         </Grid>
       </Box>
-    </Container>
+    </DashboardLayout>
   );
 };
 

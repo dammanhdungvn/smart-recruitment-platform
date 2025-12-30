@@ -11,21 +11,37 @@ const transformJobForAPI = (job) => {
   if (!job) return null;
   const jobData = job.toJSON ? job.toJSON() : { ...job };
 
-  // Map DB fields to API fields
-  if (jobData.job_title !== undefined) {
+  // Map DB fields to API fields but keep originals for backward compatibility
+  if (jobData.job_title !== undefined && jobData.title === undefined) {
     jobData.title = jobData.job_title;
-    delete jobData.job_title;
   }
-  if (jobData.city !== undefined) {
+  if (jobData.title !== undefined && jobData.job_title === undefined) {
+    jobData.job_title = jobData.title;
+  }
+
+  if (jobData.city !== undefined && jobData.location === undefined) {
     jobData.location = jobData.city;
-    delete jobData.city;
   }
-  if (jobData.user_id !== undefined) {
+  if (jobData.location !== undefined && jobData.city === undefined) {
+    jobData.city = jobData.location;
+  }
+
+  if (jobData.user_id !== undefined && jobData.recruiter_id === undefined) {
     jobData.recruiter_id = jobData.user_id;
-    delete jobData.user_id;
   }
-  if (jobData.job_fields !== undefined) {
+
+  if (jobData.job_fields !== undefined && jobData.category === undefined) {
     jobData.category = jobData.job_fields; // Map job_fields to category for API
+  }
+  if (jobData.category !== undefined && jobData.job_fields === undefined) {
+    jobData.job_fields = jobData.category;
+  }
+
+  if (jobData.createdAt && !jobData.created_at) {
+    jobData.created_at = jobData.createdAt;
+  }
+  if (jobData.updatedAt && !jobData.updated_at) {
+    jobData.updated_at = jobData.updatedAt;
   }
 
   // Extract company from recruiter association if present
@@ -91,11 +107,31 @@ const getAllJobs = async (req, res, next) => {
       limit = parsedLimit;
     }
 
+    const categoryParam = req.query.category || req.query.job_fields;
+    let categories;
+    let jobFields = undefined;
+
+    if (Array.isArray(categoryParam)) {
+      categories = categoryParam.filter(Boolean);
+    } else if (typeof categoryParam === "string") {
+      const parts = categoryParam
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      if (parts.length > 1) {
+        categories = parts;
+      } else if (parts.length === 1) {
+        jobFields = parts[0];
+      }
+    }
+
     const filters = {
       city: req.query.city || req.query.location, // Accept both city and location
       job_type: req.query.job_type,
       position_level: req.query.position_level,
-      job_fields: req.query.job_fields || req.query.category, // Accept both job_fields and category
+      job_fields: jobFields,
+      categories,
       skills: req.query.skills,
       search: req.query.search,
       page,
@@ -215,13 +251,30 @@ const updateJobStatus = async (req, res, next) => {
     const job = await jobService.updateJobStatus(
       req.params.id,
       req.user.id,
-      status
+      status,
+      req.user?.role
     );
     const transformedJob = transformJobForAPI(job);
     sendSuccessResponse(
       res,
       { job: transformedJob },
       "Job status updated successfully"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get distinct categories for filtering
+ */
+const getJobCategories = async (_req, res, next) => {
+  try {
+    const categories = await jobService.getJobCategories();
+    sendSuccessResponse(
+      res,
+      { categories },
+      "Job categories retrieved successfully"
     );
   } catch (error) {
     next(error);
@@ -236,4 +289,5 @@ module.exports = {
   updateJob,
   deleteJob,
   updateJobStatus,
+  getJobCategories,
 };

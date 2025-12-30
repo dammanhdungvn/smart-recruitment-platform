@@ -11,7 +11,15 @@ import {
   Pagination,
   CircularProgress,
   Chip,
+  Autocomplete,
 } from "@mui/material";
+import {
+  LocationOnOutlined,
+  WorkOutline,
+  SellOutlined,
+  MonetizationOnOutlined,
+  AccessTime,
+} from "@mui/icons-material";
 import Grid from "@mui/material/Grid";
 import { useNavigate } from "react-router-dom";
 import { jobService } from "../../services/jobService";
@@ -24,6 +32,7 @@ const JobSearchPage: React.FC = () => {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(false);
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: PAGINATION.PAGE_SIZE,
@@ -35,18 +44,35 @@ const JobSearchPage: React.FC = () => {
     search: "",
     city: "",
     job_type: "",
+    category: [],
   });
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
 
   useEffect(() => {
     fetchJobs();
   }, [filters.page]);
 
-  const fetchJobs = async () => {
+  const loadCategories = async () => {
+    try {
+      const categories = await jobService.getCategories();
+      setCategoryOptions(categories);
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message || "Không thể tải danh mục việc làm"
+      );
+    }
+  };
+
+  const fetchJobs = async (overrideFilters?: JobFilters) => {
     setLoading(true);
     try {
-      const response = await jobService.getJobs(filters);
-      setJobs(response.data.jobs);
-      setPagination(response.data.pagination);
+      const activeFilters = overrideFilters || filters;
+      const { jobs, pagination } = await jobService.getJobs(activeFilters);
+      setJobs(jobs);
+      setPagination(pagination);
     } catch (error: any) {
       toast.error(
         error.response?.data?.message || "Không thể tải danh sách việc làm"
@@ -57,8 +83,9 @@ const JobSearchPage: React.FC = () => {
   };
 
   const handleSearch = () => {
-    setFilters({ ...filters, page: 1 });
-    fetchJobs();
+    const nextFilters = { ...filters, page: 1 };
+    setFilters(nextFilters);
+    fetchJobs(nextFilters);
   };
 
   const handlePageChange = (
@@ -70,6 +97,10 @@ const JobSearchPage: React.FC = () => {
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters({ ...filters, [field]: value });
+  };
+
+  const handleCategoryChange = (_: unknown, values: string[]) => {
+    setFilters({ ...filters, category: values });
   };
 
   return (
@@ -123,6 +154,27 @@ const JobSearchPage: React.FC = () => {
                 ))}
               </TextField>
             </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Autocomplete
+                multiple
+                options={categoryOptions}
+                value={
+                  Array.isArray(filters.category)
+                    ? filters.category
+                    : filters.category
+                    ? [filters.category]
+                    : []
+                }
+                onChange={handleCategoryChange}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Danh mục"
+                    placeholder="Chọn một hoặc nhiều danh mục"
+                  />
+                )}
+              />
+            </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
               <Button
                 fullWidth
@@ -147,19 +199,67 @@ const JobSearchPage: React.FC = () => {
             <Grid container spacing={3}>
               {jobs.map((job) => (
                 <Grid size={{ xs: 12 }} key={job.id}>
-                  <Card>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        {job.job_title}
-                      </Typography>
-                      <Box sx={{ mt: 2 }}>
-                        <Chip label={job.city} size="small" sx={{ mr: 1 }} />
+                  <Card
+                    sx={{
+                      border: "1px solid",
+                      borderColor: "grey.200",
+                      boxShadow: "0 10px 40px rgba(15, 23, 42, 0.08)",
+                      borderRadius: 3,
+                    }}
+                  >
+                    <CardContent
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 1.5,
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 2,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                          {job.job_title}
+                        </Typography>
                         <Chip
-                          label={job.job_type}
+                          icon={<AccessTime fontSize="small" />}
+                          label={`Đăng ${formatDate(job.created_at)}`}
                           size="small"
-                          sx={{ mr: 1 }}
+                          sx={{ bgcolor: "grey.100" }}
                         />
+                      </Box>
+
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                        {job.city && (
+                          <Chip
+                            icon={<LocationOnOutlined fontSize="small" />}
+                            label={job.city}
+                            size="small"
+                            sx={{ bgcolor: "grey.100" }}
+                          />
+                        )}
+                        {job.job_type && (
+                          <Chip
+                            icon={<WorkOutline fontSize="small" />}
+                            label={job.job_type}
+                            size="small"
+                            sx={{ bgcolor: "grey.100" }}
+                          />
+                        )}
+                        {job.category && (
+                          <Chip
+                            icon={<SellOutlined fontSize="small" />}
+                            label={job.category}
+                            size="small"
+                            color="secondary"
+                          />
+                        )}
                         <Chip
+                          icon={<MonetizationOnOutlined fontSize="small" />}
                           label={formatSalary(
                             job.salary_min,
                             job.salary_max,
@@ -169,26 +269,39 @@ const JobSearchPage: React.FC = () => {
                           color="primary"
                         />
                       </Box>
+
                       <Typography
                         variant="body2"
                         color="text.secondary"
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 1 }}
                       >
-                        {job.description?.substring(0, 200)}...
+                        {job.description?.substring(0, 180) || "Chưa có mô tả"}
+                        ...
                       </Typography>
+
                       <Box
                         sx={{
                           display: "flex",
                           justifyContent: "space-between",
                           alignItems: "center",
+                          gap: 2,
+                          flexWrap: "wrap",
                         }}
                       >
-                        <Typography variant="caption" color="text.secondary">
-                          Đăng {formatDate(job.created_at)}
-                        </Typography>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary">
+                            Hạn nộp
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {job.deadline
+                              ? formatDate(job.deadline)
+                              : "Không giới hạn"}
+                          </Typography>
+                        </Box>
                         <Button
                           variant="contained"
                           onClick={() => navigate(`/candidate/jobs/${job.id}`)}
+                          sx={{ px: 3 }}
                         >
                           Xem chi tiết
                         </Button>

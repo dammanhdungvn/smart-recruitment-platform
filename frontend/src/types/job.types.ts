@@ -5,6 +5,7 @@ export interface Job {
   job_type: 'full-time' | 'part-time' | 'contract' | 'internship' | 'freelance';
   position_level: string;
   job_fields: string;
+  category?: string;
   experience: string;
   skills: string;
   description?: string;
@@ -25,6 +26,8 @@ export interface JobFilters {
   job_type?: string;
   position_level?: string;
   job_fields?: string;
+  category?: string | string[];
+  categories?: string[]; // optional convenience for UI multi-select
   skills?: string;
   search?: string;
   page?: number;
@@ -36,6 +39,7 @@ export interface JobFormData {
   job_type: 'full-time' | 'part-time' | 'contract' | 'internship' | 'freelance';
   position_level: string;
   job_fields: string;
+  category?: string;
   experience: string;
   skills: string;
   description?: string;

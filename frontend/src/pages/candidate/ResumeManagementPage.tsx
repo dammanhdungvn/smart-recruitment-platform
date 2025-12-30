@@ -199,17 +199,37 @@ const ResumeManagementPage: React.FC = () => {
           )}
         </TableCell>
         <TableCell>
-          {resume.is_primary ? (
+          <Stack direction="row" spacing={1} alignItems="center">
             <Chip
-              icon={<Star fontSize="small" />}
-              label="CV chính"
-              color="primary"
+              label={
+                resume.status === "approved"
+                  ? "Đã duyệt"
+                  : resume.status === "rejected"
+                  ? "Từ chối"
+                  : "Chờ duyệt"
+              }
               size="small"
-              sx={{ fontWeight: 700 }}
+              color={
+                resume.status === "approved"
+                  ? "success"
+                  : resume.status === "rejected"
+                  ? "error"
+                  : "default"
+              }
+              variant={resume.status === "pending" ? "outlined" : "filled"}
             />
-          ) : (
-            <Chip label="Phụ" size="small" variant="outlined" />
-          )}
+            {resume.is_primary ? (
+              <Chip
+                icon={<Star fontSize="small" />}
+                label="CV chính"
+                color="primary"
+                size="small"
+                sx={{ fontWeight: 700 }}
+              />
+            ) : (
+              <Chip label="Phụ" size="small" variant="outlined" />
+            )}
+          </Stack>
         </TableCell>
         <TableCell align="right">
           <Stack direction="row" spacing={1} justifyContent="flex-end">

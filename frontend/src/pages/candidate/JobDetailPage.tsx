@@ -44,8 +44,8 @@ const JobDetailPage: React.FC = () => {
   const fetchJobDetail = async () => {
     setLoading(true);
     try {
-      const response = await jobService.getJobById(Number(id));
-      setJob(response.data);
+      const jobData = await jobService.getJobById(Number(id));
+      setJob(jobData);
     } catch (error: any) {
       toast.error(
         error.response?.data?.message || "Không thể tải chi tiết công việc"
@@ -98,6 +98,28 @@ const JobDetailPage: React.FC = () => {
 
   if (!job) return null;
 
+  const category = job.category || job.job_fields;
+  const skills = job.skills ? job.skills.split(",").map((s) => s.trim()) : [];
+  const quickInfo = [
+    { label: "Địa điểm", value: job.city },
+    { label: "Hình thức", value: job.job_type },
+    { label: "Cấp bậc", value: job.position_level },
+    { label: "Danh mục", value: category },
+    { label: "Kinh nghiệm", value: job.experience || "Không yêu cầu" },
+    {
+      label: "Mức lương",
+      value: formatSalary(job.salary_min, job.salary_max, job.unit),
+    },
+    {
+      label: "Hạn nộp",
+      value: job.deadline ? formatDate(job.deadline) : "Không giới hạn",
+    },
+    {
+      label: "Đăng",
+      value: job.created_at ? formatDate(job.created_at) : "N/A",
+    },
+  ];
+
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 4, mb: 4 }}>
@@ -105,83 +127,184 @@ const JobDetailPage: React.FC = () => {
           ← Quay lại
         </Button>
 
-        <Paper sx={{ p: 4 }}>
-          <Typography variant="h4" gutterBottom>
-            {job.job_title}
-          </Typography>
-
-          <Box sx={{ mb: 3 }}>
-            <Chip label={job.city} sx={{ mr: 1 }} />
-            <Chip label={job.job_type} sx={{ mr: 1 }} />
-            <Chip label={job.position_level} sx={{ mr: 1 }} />
-            <Chip
-              label={formatSalary(job.salary_min, job.salary_max, job.unit)}
-              color="primary"
-            />
-          </Box>
-
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              Mô tả công việc
-            </Typography>
-            <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
-              {job.description}
-            </Typography>
-          </Box>
-
-          {job.requirements && (
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" gutterBottom>
-                Yêu cầu
+        <Paper sx={{ p: 4, display: "flex", flexDirection: "column", gap: 3 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 2,
+              flexWrap: "wrap",
+            }}
+          >
+            <Box>
+              <Typography variant="h4" gutterBottom>
+                {job.job_title}
               </Typography>
-              <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
-                {job.requirements}
-              </Typography>
-            </Box>
-          )}
-
-          {job.benefits && (
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" gutterBottom>
-                Quyền lợi
-              </Typography>
-              <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
-                {job.benefits}
-              </Typography>
-            </Box>
-          )}
-
-          {job.skills && (
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" gutterBottom>
-                Kỹ năng yêu cầu
-              </Typography>
-              <Box>
-                {job.skills.split(",").map((skill, index) => (
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                {job.city && <Chip label={job.city} />}
+                {job.job_type && <Chip label={job.job_type} />}
+                {job.position_level && <Chip label={job.position_level} />}
+                {category && <Chip label={category} color="secondary" />}
+                <Chip
+                  label={formatSalary(job.salary_min, job.salary_max, job.unit)}
+                  color="primary"
+                />
+                {job.status && (
                   <Chip
-                    key={index}
-                    label={skill.trim()}
-                    sx={{ mr: 1, mb: 1 }}
+                    label={
+                      job.status === "open"
+                        ? "Đang mở"
+                        : job.status === "closed"
+                        ? "Đã đóng"
+                        : "Nháp"
+                    }
+                    color={job.status === "open" ? "success" : "default"}
                   />
-                ))}
+                )}
               </Box>
             </Box>
-          )}
 
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="caption" color="text.secondary">
-              Hạn nộp:{" "}
-              {job.deadline ? formatDate(job.deadline) : "Không giới hạn"}
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Box sx={{ textAlign: "right" }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Hạn nộp
+                </Typography>
+                <Typography variant="h6">
+                  {job.deadline ? formatDate(job.deadline) : "Không giới hạn"}
+                </Typography>
+              </Box>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => setApplyDialogOpen(true)}
+              >
+                Ứng tuyển ngay
+              </Button>
+            </Box>
           </Box>
 
-          <Button
-            variant="contained"
-            size="large"
-            onClick={() => setApplyDialogOpen(true)}
+          {/* Quick facts */}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              gap: 1.5,
+            }}
           >
-            Ứng tuyển ngay
-          </Button>
+            {quickInfo.map((item) => (
+              <Box
+                key={item.label}
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  border: "1px solid",
+                  borderColor: "grey.200",
+                  backgroundColor: "grey.50",
+                }}
+              >
+                <Typography variant="caption" color="text.secondary">
+                  {item.label}
+                </Typography>
+                <Typography variant="body1" sx={{ mt: 0.5 }}>
+                  {item.value || "N/A"}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+
+          {/* Description */}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" },
+              gap: 3,
+            }}
+          >
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Mô tả công việc
+              </Typography>
+              <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
+                {job.description || "Chưa có mô tả."}
+              </Typography>
+
+              {job.requirements && (
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Yêu cầu
+                  </Typography>
+                  <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
+                    {job.requirements}
+                  </Typography>
+                </Box>
+              )}
+
+              {job.benefits && (
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Quyền lợi
+                  </Typography>
+                  <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
+                    {job.benefits}
+                  </Typography>
+                </Box>
+              )}
+
+              {skills.length > 0 && (
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Kỹ năng cần có
+                  </Typography>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                    {skills.map((skill, index) => (
+                      <Chip
+                        key={index}
+                        label={skill}
+                        sx={{ backgroundColor: "grey.100" }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+            </Box>
+
+            <Box
+              sx={{
+                p: 3,
+                borderRadius: 2,
+                border: "1px solid",
+                borderColor: "grey.200",
+                background: "linear-gradient(180deg, #f8fafc 0%, #ffffff 100%)",
+              }}
+            >
+              <Typography variant="subtitle1" gutterBottom>
+                Tóm tắt
+              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                <Typography variant="body2">Mã tin: #{job.id}</Typography>
+                <Typography variant="body2">
+                  Mức lương:{" "}
+                  {formatSalary(job.salary_min, job.salary_max, job.unit)}
+                </Typography>
+                <Typography variant="body2">
+                  Hình thức: {job.job_type}
+                </Typography>
+                <Typography variant="body2">Địa điểm: {job.city}</Typography>
+                <Typography variant="body2">
+                  Hạn nộp:{" "}
+                  {job.deadline ? formatDate(job.deadline) : "Không giới hạn"}
+                </Typography>
+              </Box>
+              <Button
+                fullWidth
+                sx={{ mt: 3 }}
+                variant="contained"
+                onClick={() => setApplyDialogOpen(true)}
+              >
+                Ứng tuyển ngay
+              </Button>
+            </Box>
+          </Box>
         </Paper>
       </Box>
 

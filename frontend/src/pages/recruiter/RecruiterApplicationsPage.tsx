@@ -62,7 +62,7 @@ const RecruiterApplicationsPage: React.FC = () => {
 
   const handleOpenDialog = (app: Application) => {
     setSelectedApp(app);
-    setNewStatus(app.status);
+    setNewStatus(app.status === "submitted" ? "pending" : app.status);
     setNotes(app.notes || "");
     setDialogOpen(true);
   };
@@ -226,11 +226,13 @@ const RecruiterApplicationsPage: React.FC = () => {
                 onChange={(e) => setNewStatus(e.target.value)}
                 margin="normal"
               >
-                <MenuItem value="pending">Chờ xử lý</MenuItem>
-                <MenuItem value="reviewing">Đang xét duyệt</MenuItem>
-                <MenuItem value="shortlisted">Đã chọn</MenuItem>
-                <MenuItem value="rejected">Từ chối</MenuItem>
-                <MenuItem value="accepted">Chấp nhận</MenuItem>
+                {APPLICATION_STATUSES.filter(
+                  (s) => s.value !== "submitted"
+                ).map((status) => (
+                  <MenuItem key={status.value} value={status.value}>
+                    {status.label}
+                  </MenuItem>
+                ))}
               </TextField>
 
               <TextField

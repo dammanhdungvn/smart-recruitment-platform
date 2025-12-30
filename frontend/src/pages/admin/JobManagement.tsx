@@ -27,6 +27,7 @@ import EmptyState from "../../components/admin/EmptyState";
 import { adminService } from "../../services/adminService";
 import type { JobListItem } from "../../types/admin.types";
 import toast from "react-hot-toast";
+import { formatDate, formatSalary } from "../../utils/formatters";
 
 const JobManagement: React.FC = () => {
   const [jobs, setJobs] = useState<JobListItem[]>([]);
@@ -214,6 +215,12 @@ const JobManagement: React.FC = () => {
                     Type
                   </TableCell>
                   <TableCell sx={{ fontWeight: 700, fontSize: "0.875rem" }}>
+                    Category
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 700, fontSize: "0.875rem" }}>
+                    Salary
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 700, fontSize: "0.875rem" }}>
                     Recruiter
                   </TableCell>
                   <TableCell sx={{ fontWeight: 700, fontSize: "0.875rem" }}>
@@ -263,6 +270,16 @@ const JobManagement: React.FC = () => {
                           {job.job_type}
                         </TableCell>
                         <TableCell sx={{ fontSize: "0.875rem" }}>
+                          {job.category || job.job_fields || "-"}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: "0.875rem" }}>
+                          {formatSalary(
+                            job.salary_min,
+                            job.salary_max,
+                            job.unit
+                          )}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: "0.875rem" }}>
                           {job.recruiter?.full_name || "N/A"}
                         </TableCell>
                         <TableCell>
@@ -279,7 +296,7 @@ const JobManagement: React.FC = () => {
                           />
                         </TableCell>
                         <TableCell sx={{ fontSize: "0.875rem" }}>
-                          {new Date(job.created_at).toLocaleDateString()}
+                          {job.created_at ? formatDate(job.created_at) : "-"}
                         </TableCell>
                         <TableCell align="right">
                           <IconButton

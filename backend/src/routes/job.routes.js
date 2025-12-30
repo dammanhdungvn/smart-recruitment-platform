@@ -72,6 +72,19 @@ const {
 
 /**
  * @swagger
+ * /api/jobs/categories:
+ *   get:
+ *     summary: Get distinct job categories
+ *     tags: [Jobs]
+ *     responses:
+ *       200:
+ *         description: Categories retrieved successfully
+ *       500:
+ *         description: Server error
+ */
+
+/**
+ * @swagger
  * /api/jobs/{id}:
  *   get:
  *     summary: Get job by id
@@ -91,6 +104,7 @@ const {
 
 // Public routes
 router.get("/", jobController.getAllJobs);
+router.get("/categories", jobController.getJobCategories);
 router.get("/:id", jobController.getJobById);
 
 /**

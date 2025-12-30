@@ -7,6 +7,7 @@ export interface Resume {
   category?: string;
   resume_text?: string;
   is_primary: boolean;
+  status: 'pending' | 'approved' | 'rejected';
   created_at: string;
   updated_at: string;
 }

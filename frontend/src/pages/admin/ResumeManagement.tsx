@@ -20,6 +20,7 @@ import {
 import {
   MoreVert as MoreVertIcon,
   Download as DownloadIcon,
+  Visibility as VisibilityIcon,
 } from "@mui/icons-material";
 import AdminLayout from "../../components/layout/AdminLayout";
 import ConfirmDialog from "../../components/admin/ConfirmDialog";
@@ -35,6 +36,7 @@ interface Resume {
   file_size: number;
   category?: string;
   is_primary: boolean;
+  status?: "pending" | "approved" | "rejected";
   created_at: string;
   candidate?: {
     id: number;
@@ -53,10 +55,13 @@ const ResumeManagement: React.FC = () => {
   const [selectedResume, setSelectedResume] = useState<Resume | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
+    type: "delete" | "status" | null;
     title: string;
     message: string;
+    newValue?: any;
   }>({
     open: false,
+    type: null,
     title: "",
     message: "",
   });
@@ -93,6 +98,27 @@ const ResumeManagement: React.FC = () => {
     setAnchorEl(null);
   };
 
+  const handleViewDetails = () => {
+    if (!selectedResume) return;
+
+    const details = `
+Resume Details:
+━━━━━━━━━━━━━━━━━━━━
+ID: ${selectedResume.id}
+Candidate: ${selectedResume.candidate?.full_name || "N/A"}
+Email: ${selectedResume.candidate?.email || "N/A"}
+File Name: ${selectedResume.file_name}
+Category: ${selectedResume.category || "N/A"}
+Size: ${formatFileSize(selectedResume.file_size)}
+Status: ${(selectedResume.status || "pending").toUpperCase()}
+Uploaded: ${new Date(selectedResume.created_at).toLocaleString()}
+File Path: ${selectedResume.file_path}
+    `.trim();
+
+    alert(details);
+    handleMenuClose();
+  };
+
   const handleDownload = () => {
     if (!selectedResume) return;
 
@@ -109,24 +135,50 @@ const ResumeManagement: React.FC = () => {
 
     setConfirmDialog({
       open: true,
+      type: "delete",
       title: `Delete Resume`,
       message: `Are you sure you want to delete resume "${selectedResume.file_name}"? This action cannot be undone.`,
     });
     handleMenuClose();
   };
 
-  const handleConfirmDelete = async () => {
+  const handleChangeStatus = (
+    newStatus: "pending" | "approved" | "rejected"
+  ) => {
+    if (!selectedResume) return;
+
+    setConfirmDialog({
+      open: true,
+      type: "status",
+      title: "Change Resume Status",
+      message: `Are you sure you want to change the status of "${selectedResume.file_name}" to "${newStatus}"?`,
+      newValue: newStatus,
+    });
+    handleMenuClose();
+  };
+
+  const handleConfirmAction = async () => {
     if (!selectedResume) return;
 
     try {
       setActionLoading(true);
-      await adminService.deleteResume(selectedResume.id);
-      toast.success("Resume deleted successfully");
-      setConfirmDialog({ open: false, title: "", message: "" });
+      if (confirmDialog.type === "delete") {
+        await adminService.deleteResume(selectedResume.id);
+        toast.success("Resume deleted successfully");
+      } else if (confirmDialog.type === "status") {
+        // Call API to update resume status (assuming this endpoint exists)
+        await adminService.updateResumeStatus(selectedResume.id, {
+          status: confirmDialog.newValue,
+        });
+        toast.success(
+          `Resume status updated to ${confirmDialog.newValue} successfully`
+        );
+      }
+      setConfirmDialog({ open: false, type: null, title: "", message: "" });
       loadResumes();
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to delete resume");
-      console.error("Failed to delete resume:", err);
+      toast.error(err?.response?.data?.message || "Failed to perform action");
+      console.error("Failed to perform action:", err);
     } finally {
       setActionLoading(false);
     }
@@ -252,31 +304,27 @@ const ResumeManagement: React.FC = () => {
                           {formatFileSize(resume.file_size)}
                         </TableCell>
                         <TableCell>
-                          {resume.is_primary ? (
-                            <Chip
-                              label="PRIMARY"
-                              size="small"
-                              sx={{
-                                bgcolor: "#2e7d3215",
-                                color: "#2e7d32",
-                                fontWeight: 600,
-                                fontSize: "0.75rem",
-                                height: 24,
-                              }}
-                            />
-                          ) : (
-                            <Chip
-                              label="REGULAR"
-                              size="small"
-                              sx={{
-                                bgcolor: "#75757515",
-                                color: "#757575",
-                                fontWeight: 600,
-                                fontSize: "0.75rem",
-                                height: 24,
-                              }}
-                            />
-                          )}
+                          <Chip
+                            label={(resume.status || "pending").toUpperCase()}
+                            size="small"
+                            sx={{
+                              bgcolor:
+                                resume.status === "approved"
+                                  ? "#2e7d3215"
+                                  : resume.status === "rejected"
+                                  ? "#d32f2f15"
+                                  : "#ed6c0215",
+                              color:
+                                resume.status === "approved"
+                                  ? "#2e7d32"
+                                  : resume.status === "rejected"
+                                  ? "#d32f2f"
+                                  : "#ed6c02",
+                              fontWeight: 600,
+                              fontSize: "0.75rem",
+                              height: 24,
+                            }}
+                          />
                         </TableCell>
                         <TableCell sx={{ fontSize: "0.875rem" }}>
                           {new Date(resume.created_at).toLocaleDateString()}
@@ -321,9 +369,31 @@ const ResumeManagement: React.FC = () => {
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
+          <MenuItem onClick={handleViewDetails}>
+            <VisibilityIcon fontSize="small" sx={{ mr: 1 }} />
+            View Details
+          </MenuItem>
           <MenuItem onClick={handleDownload}>
             <DownloadIcon fontSize="small" sx={{ mr: 1 }} />
             Download Resume
+          </MenuItem>
+          <MenuItem
+            onClick={() => handleChangeStatus("pending")}
+            disabled={selectedResume?.status === "pending"}
+          >
+            Mark as Pending
+          </MenuItem>
+          <MenuItem
+            onClick={() => handleChangeStatus("approved")}
+            disabled={selectedResume?.status === "approved"}
+          >
+            Mark as Approved
+          </MenuItem>
+          <MenuItem
+            onClick={() => handleChangeStatus("rejected")}
+            disabled={selectedResume?.status === "rejected"}
+          >
+            Mark as Rejected
           </MenuItem>
           <MenuItem onClick={handleDeleteResume} sx={{ color: "error.main" }}>
             Delete Resume
@@ -334,13 +404,18 @@ const ResumeManagement: React.FC = () => {
           open={confirmDialog.open}
           title={confirmDialog.title}
           message={confirmDialog.message}
-          onConfirm={handleConfirmDelete}
+          onConfirm={handleConfirmAction}
           onCancel={() =>
-            setConfirmDialog({ open: false, title: "", message: "" })
+            setConfirmDialog({
+              open: false,
+              type: null,
+              title: "",
+              message: "",
+            })
           }
-          confirmText="Delete"
+          confirmText={confirmDialog.type === "delete" ? "Delete" : "Confirm"}
           cancelText="Cancel"
-          variant="danger"
+          variant={confirmDialog.type === "delete" ? "danger" : "warning"}
           loading={actionLoading}
         />
       </Box>

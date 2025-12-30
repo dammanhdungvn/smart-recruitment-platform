@@ -16,8 +16,8 @@ const RecruiterDashboard: React.FC = () => {
 
   const fetchJobCount = async () => {
     try {
-      const response = await jobService.getMyJobs();
-      setJobCount(response.data.count);
+      const { count } = await jobService.getMyJobs();
+      setJobCount(count);
     } catch (error) {
       console.error("Failed to fetch job count:", error);
     }

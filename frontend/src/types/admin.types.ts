@@ -30,7 +30,7 @@ export interface UserListItem {
 }
 
 export interface UpdateUserStatusData {
-  status: 'active' | 'inactive';
+  is_active: boolean;
 }
 
 export interface UpdateUserRoleData {
@@ -42,6 +42,12 @@ export interface JobListItem {
   job_title: string;
   city: string;
   job_type: string;
+  job_fields?: string;
+  category?: string;
+  salary_min?: number;
+  salary_max?: number;
+  unit?: 'VND' | 'USD';
+  deadline?: string;
   status: 'draft' | 'open' | 'closed';
   recruiter_id: number;
   recruiter: {

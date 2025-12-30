@@ -42,10 +42,10 @@ describe("AdminDashboard", () => {
       success: true,
       message: "Stats retrieved",
       data: {
-        totalUsers: 0,
-        totalJobs: 0,
-        totalResumes: 0,
-        totalApplications: 0,
+        users: { total: 0, candidates: 0, recruiters: 0 },
+        jobs: { total: 0, active: 0, closed: 0 },
+        resumes: { total: 0 },
+        applications: { total: 0, pending: 0, accepted: 0, rejected: 0 },
       },
     });
 
@@ -71,10 +71,15 @@ describe("AdminDashboard", () => {
                 success: true,
                 message: "Stats retrieved",
                 data: {
-                  totalUsers: 100,
-                  totalJobs: 50,
-                  totalResumes: 200,
-                  totalApplications: 75,
+                  users: { total: 100, candidates: 60, recruiters: 40 },
+                  jobs: { total: 50, active: 30, closed: 20 },
+                  resumes: { total: 200 },
+                  applications: {
+                    total: 75,
+                    pending: 25,
+                    accepted: 30,
+                    rejected: 20,
+                  },
                 },
               }),
             100
@@ -98,10 +103,25 @@ describe("AdminDashboard", () => {
       success: true,
       message: "Stats retrieved",
       data: {
-        totalUsers: 100,
-        totalJobs: 50,
-        totalResumes: 200,
-        totalApplications: 75,
+        users: {
+          total: 100,
+          candidates: 60,
+          recruiters: 40,
+        },
+        jobs: {
+          total: 50,
+          active: 30,
+          closed: 20,
+        },
+        resumes: {
+          total: 200,
+        },
+        applications: {
+          total: 75,
+          pending: 25,
+          accepted: 30,
+          rejected: 20,
+        },
       },
     });
 
@@ -112,17 +132,20 @@ describe("AdminDashboard", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Total Users")).toBeInTheDocument();
-      expect(screen.getByText("100")).toBeInTheDocument();
+      // Check stats cards - use getAllByText since some labels appear multiple times
+      expect(screen.getAllByText("Total Users").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("100").length).toBeGreaterThan(0);
 
-      expect(screen.getByText("Total Jobs")).toBeInTheDocument();
-      expect(screen.getByText("50")).toBeInTheDocument();
+      expect(screen.getAllByText("Total Jobs").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("50").length).toBeGreaterThan(0);
 
-      expect(screen.getByText("Total Resumes")).toBeInTheDocument();
-      expect(screen.getByText("200")).toBeInTheDocument();
+      expect(screen.getAllByText("Total Resumes").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("200").length).toBeGreaterThan(0);
 
-      expect(screen.getByText("Total Applications")).toBeInTheDocument();
-      expect(screen.getByText("75")).toBeInTheDocument();
+      expect(screen.getAllByText("Total Applications").length).toBeGreaterThan(
+        0
+      );
+      expect(screen.getAllByText("75").length).toBeGreaterThan(0);
     });
   });
 
@@ -148,15 +171,30 @@ describe("AdminDashboard", () => {
     });
   });
 
-  it("should render chart placeholders", async () => {
+  it("should render breakdown sections", async () => {
     vi.mocked(adminService.getStats).mockResolvedValue({
       success: true,
       message: "Stats retrieved",
       data: {
-        totalUsers: 10,
-        totalJobs: 5,
-        totalResumes: 20,
-        totalApplications: 8,
+        users: {
+          total: 10,
+          candidates: 6,
+          recruiters: 4,
+        },
+        jobs: {
+          total: 5,
+          active: 3,
+          closed: 2,
+        },
+        resumes: {
+          total: 20,
+        },
+        applications: {
+          total: 8,
+          pending: 3,
+          accepted: 3,
+          rejected: 2,
+        },
       },
     });
 
@@ -167,8 +205,10 @@ describe("AdminDashboard", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Jobs Over Time")).toBeInTheDocument();
-      expect(screen.getByText("Applications by Status")).toBeInTheDocument();
+      expect(screen.getByText("User Breakdown")).toBeInTheDocument();
+      expect(screen.getByText("Application Status")).toBeInTheDocument();
+      expect(screen.getByText("Candidates")).toBeInTheDocument();
+      expect(screen.getByText("Recruiters")).toBeInTheDocument();
     });
   });
 
@@ -177,10 +217,10 @@ describe("AdminDashboard", () => {
       success: true,
       message: "Stats retrieved",
       data: {
-        totalUsers: 0,
-        totalJobs: 0,
-        totalResumes: 0,
-        totalApplications: 0,
+        users: { total: 0, candidates: 0, recruiters: 0 },
+        jobs: { total: 0, active: 0, closed: 0 },
+        resumes: { total: 0 },
+        applications: { total: 0, pending: 0, accepted: 0, rejected: 0 },
       },
     });
 

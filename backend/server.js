@@ -1,4 +1,5 @@
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, ".env") });
 const app = require("./src/app");
 const config = require("./src/config/config");
 const { testConnection } = require("./src/config/database");
@@ -19,6 +20,7 @@ const startServer = async () => {
       logger.info(`Server is running on port ${PORT}`);
       logger.info(`Environment: ${config.nodeEnv}`);
       logger.info(`API: http://localhost:${PORT}/api`);
+      logger.info(`Swagger docs: http://localhost:${PORT}/api/docs`);
     });
   } catch (error) {
     logger.error("Failed to start server:", error);

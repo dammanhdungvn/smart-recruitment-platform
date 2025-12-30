@@ -8,7 +8,15 @@ export interface Application {
   user_id: number;
   resume_id: number;
   cover_letter?: string;
-  status: 'pending' | 'reviewing' | 'shortlisted' | 'rejected' | 'accepted' | 'withdrawn';
+  status:
+    | 'submitted'
+    | 'pending'
+    | 'reviewing'
+    | 'shortlisted'
+    | 'interviewed'
+    | 'offered'
+    | 'rejected'
+    | 'withdrawn';
   applied_at: string;
   reviewed_at?: string;
   notes?: string;
@@ -26,6 +34,13 @@ export interface ApplicationFormData {
 }
 
 export interface UpdateApplicationStatusData {
-  status: 'pending' | 'reviewing' | 'shortlisted' | 'rejected' | 'accepted';
+  status:
+    | 'pending'
+    | 'reviewing'
+    | 'shortlisted'
+    | 'interviewed'
+    | 'offered'
+    | 'rejected'
+    | 'withdrawn';
   notes?: string;
 }

@@ -42,7 +42,11 @@ const addJobCategoryColumn = async () => {
       WHERE category IS NULL
     `);
 
-    logger.info(`✓ Updated ${updateResult.affectedRows || 0} existing records with default category`);
+    logger.info(
+      `✓ Updated ${
+        updateResult.affectedRows || 0
+      } existing records with default category`
+    );
 
     process.exit(0);
   } catch (error) {

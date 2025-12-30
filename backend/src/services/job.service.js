@@ -1,7 +1,47 @@
 const { Job, User, Application } = require("../models");
 const { Op } = require("sequelize");
+const { sequelize } = require("../config/database");
 
 const PAGE_SIZE = 10;
+
+/**
+ * Get distinct categories (both category and job_fields) for filters
+ */
+const getJobCategories = async () => {
+  // Query distinct category and job_fields values (non-null)
+  const [categoryRows, fieldRows] = await Promise.all([
+    Job.findAll({
+      attributes: [
+        [sequelize.fn("DISTINCT", sequelize.col("category")), "category"],
+      ],
+      where: {
+        status: "open",
+        category: { [Op.ne]: null },
+      },
+      raw: true,
+    }),
+    Job.findAll({
+      attributes: [
+        [sequelize.fn("DISTINCT", sequelize.col("job_fields")), "job_fields"],
+      ],
+      where: {
+        status: "open",
+        job_fields: { [Op.ne]: null },
+      },
+      raw: true,
+    }),
+  ]);
+
+  const categories = new Set();
+  categoryRows.forEach((row) => {
+    if (row.category) categories.add(row.category);
+  });
+  fieldRows.forEach((row) => {
+    if (row.job_fields) categories.add(row.job_fields);
+  });
+
+  return Array.from(categories).sort((a, b) => a.localeCompare(b));
+};
 
 /**
  * Create new job
@@ -33,36 +73,53 @@ const getAllJobs = async (filters = {}) => {
   const page = filters.page || 1;
   const limit = filters.limit || PAGE_SIZE;
   const offset = (page - 1) * limit;
-  const where = { status: "open" };
+
+  const andConditions = [{ status: "open" }];
 
   // Apply filters
   if (filters.city) {
-    where.city = { [Op.like]: `%${filters.city}%` };
+    andConditions.push({ city: { [Op.like]: `%${filters.city}%` } });
   }
 
   if (filters.job_type) {
-    where.job_type = filters.job_type;
+    andConditions.push({ job_type: filters.job_type });
   }
 
   if (filters.position_level) {
-    where.position_level = filters.position_level;
+    andConditions.push({ position_level: filters.position_level });
   }
 
-  if (filters.job_fields) {
-    where.job_fields = { [Op.like]: `%${filters.job_fields}%` };
+  if (filters.categories && filters.categories.length > 0) {
+    andConditions.push({
+      [Op.or]: [
+        { category: { [Op.in]: filters.categories } },
+        { job_fields: { [Op.in]: filters.categories } },
+      ],
+    });
+  } else if (filters.job_fields) {
+    andConditions.push({
+      [Op.or]: [
+        { job_fields: { [Op.like]: `%${filters.job_fields}%` } },
+        { category: { [Op.like]: `%${filters.job_fields}%` } },
+      ],
+    });
   }
 
   if (filters.skills) {
-    where.skills = { [Op.like]: `%${filters.skills}%` };
+    andConditions.push({ skills: { [Op.like]: `%${filters.skills}%` } });
   }
 
   if (filters.search) {
-    where[Op.or] = [
-      { job_title: { [Op.like]: `%${filters.search}%` } },
-      { description: { [Op.like]: `%${filters.search}%` } },
-      { skills: { [Op.like]: `%${filters.search}%` } },
-    ];
+    andConditions.push({
+      [Op.or]: [
+        { job_title: { [Op.like]: `%${filters.search}%` } },
+        { description: { [Op.like]: `%${filters.search}%` } },
+        { skills: { [Op.like]: `%${filters.search}%` } },
+      ],
+    });
   }
+
+  const where = { [Op.and]: andConditions };
   const result = await Job.findAndCountAll({
     where,
     include: [
@@ -169,16 +226,21 @@ const deleteJob = async (jobId, userId) => {
 /**
  * Update job status
  */
-const updateJobStatus = async (jobId, userId, status) => {
+const updateJobStatus = async (jobId, userId, status, role = "candidate") => {
   const job = await Job.findByPk(jobId);
 
   if (!job) {
     throw new Error("Job not found");
   }
 
-  // Check ownership
-  if (job.user_id !== userId) {
-    throw new Error("Unauthorized to update this job");
+  const isAdmin = role === "admin";
+  const requesterId = Number(userId);
+
+  // Check ownership (admins can override)
+  if (!isAdmin && job.user_id !== requesterId) {
+    const err = new Error("Unauthorized to update this job");
+    err.statusCode = 403;
+    throw err;
   }
 
   job.status = status;
@@ -195,4 +257,5 @@ module.exports = {
   updateJob,
   deleteJob,
   updateJobStatus,
+  getJobCategories,
 };

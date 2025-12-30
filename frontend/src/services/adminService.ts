@@ -4,11 +4,9 @@ import type {
   AdminStats,
   UserListItem,
   UpdateUserStatusData,
-  UpdateUserRoleData,
   JobListItem,
   ApplicationListItem,
   JobFilters,
-  ApplicationFilters,
 } from '../types/admin.types';
 
 export const adminService = {
@@ -26,6 +24,11 @@ export const adminService = {
 
   updateUserStatus: async (userId: number, data: UpdateUserStatusData): Promise<ApiResponse<{ user: UserListItem }>> => {
     const response = await api.patch(`/admin/users/${userId}/status`, data);
+    return response.data;
+  },
+
+  updateUserRole: async (userId: number, data: { role: string }): Promise<ApiResponse<{ user: UserListItem }>> => {
+    const response = await api.patch(`/admin/users/${userId}/role`, data);
     return response.data;
   },
 
@@ -60,6 +63,11 @@ export const adminService = {
   // Resume Management
   getResumes: async (page = 1): Promise<ApiResponse<{ resumes: any[]; pagination: PaginationMeta }>> => {
     const response = await api.get(`/admin/resumes?page=${page}`);
+    return response.data;
+  },
+
+  updateResumeStatus: async (resumeId: number, data: { status: string }): Promise<ApiResponse<any>> => {
+    const response = await api.patch(`/admin/resumes/${resumeId}/status`, data);
     return response.data;
   },
 

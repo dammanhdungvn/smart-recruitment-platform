@@ -43,6 +43,7 @@ const JobManagementPage: React.FC = () => {
     job_type: "full-time",
     position_level: "junior",
     job_fields: "",
+    category: "",
     experience: "",
     skills: "",
     description: "",
@@ -64,8 +65,8 @@ const JobManagementPage: React.FC = () => {
   const fetchJobs = async () => {
     setLoading(true);
     try {
-      const response = await jobService.getMyJobs();
-      setJobs(response.data.jobs);
+      const { jobs } = await jobService.getMyJobs();
+      setJobs(jobs);
     } catch (error: any) {
       toast.error(
         error.response?.data?.message || "Không thể tải danh sách công việc"
@@ -84,6 +85,7 @@ const JobManagementPage: React.FC = () => {
         job_type: job.job_type,
         position_level: job.position_level,
         job_fields: job.job_fields || "",
+        category: job.category || "",
         experience: job.experience,
         skills: job.skills,
         description: job.description || "",
@@ -102,6 +104,7 @@ const JobManagementPage: React.FC = () => {
         job_type: "full-time",
         position_level: "junior",
         job_fields: "",
+        category: "",
         experience: "",
         skills: "",
         description: "",
@@ -350,6 +353,14 @@ const JobManagementPage: React.FC = () => {
                 required
               />
             </Box>
+
+            <TextField
+              fullWidth
+              label="Danh mục"
+              value={formData.category || ""}
+              onChange={(e) => handleChange("category", e.target.value)}
+              placeholder="BUSINESS-DEVELOPMENT, INFORMATION-TECHNOLOGY..."
+            />
 
             <TextField
               fullWidth

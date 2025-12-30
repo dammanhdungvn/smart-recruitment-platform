@@ -31,12 +31,14 @@ export const CITIES = [
 ];
 
 export const APPLICATION_STATUSES = [
-  { value: 'pending', label: 'Chờ xử lý', color: '#808080' },
+  { value: 'submitted', label: 'Đã nộp', color: '#607d8b' },
+  { value: 'pending', label: 'Chờ xử lý', color: '#9e9e9e' },
   { value: 'reviewing', label: 'Đang xét duyệt', color: '#2196f3' },
-  { value: 'shortlisted', label: 'Đã chọn', color: '#4caf50' },
+  { value: 'shortlisted', label: 'Vòng phỏng vấn', color: '#4caf50' },
+  { value: 'interviewed', label: 'Đã phỏng vấn', color: '#26a69a' },
+  { value: 'offered', label: 'Đã gửi offer', color: '#8e24aa' },
   { value: 'rejected', label: 'Từ chối', color: '#f44336' },
-  { value: 'accepted', label: 'Chấp nhận', color: '#4caf50' },
-  { value: 'withdrawn', label: 'Đã rút', color: '#808080' },
+  { value: 'withdrawn', label: 'Đã rút', color: '#757575' },
 ];
 
 export const PAGINATION = {
