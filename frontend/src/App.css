@@ -1,9 +1,12 @@
+/* App.css - Global styles for Smart Recruitment Platform */
+
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
+
 
 .logo {
   height: 6em;
