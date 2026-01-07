@@ -41,13 +41,10 @@ cd <project-folder>
 * **Windows**
 
   ```bash
-<<<<<<< HEAD
-  scripts/start-all.bat
-=======
   cd .\scripts
 
   .\start-all.cmd
->>>>>>> b401a7e (update)
+
   ```
 
 * **Linux / MacOS**
