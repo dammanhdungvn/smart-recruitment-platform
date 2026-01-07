@@ -296,7 +296,9 @@ const JobManagement: React.FC = () => {
                           />
                         </TableCell>
                         <TableCell sx={{ fontSize: "0.875rem" }}>
-                          {job.created_at ? formatDate(job.created_at) : "-"}
+                          {formatDate(
+                            (job as any).created_at || (job as any).createdAt
+                          )}
                         </TableCell>
                         <TableCell align="right">
                           <IconButton

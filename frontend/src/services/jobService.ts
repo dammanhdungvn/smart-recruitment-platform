@@ -26,7 +26,16 @@ export const jobService = {
     const response = await api.get('/jobs/categories');
     const rawCategories: unknown = response.data?.data?.categories || [];
 
-    // Clean up leading commas and surrounding whitespace before sending to UI
+    // Clean and normalize to stop duplicate keys (trim, collapse spaces, strip accents)
+    const toSlug = (val: string) =>
+      val
+        .normalize('NFD')
+        .replace(/\p{Diacritic}+/gu, '')
+        .replace(/\s*,\s*/g, ',')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+
     const cleaned = Array.isArray(rawCategories)
       ? rawCategories
           .map((item) =>
@@ -37,7 +46,18 @@ export const jobService = {
           .filter((item) => item.length > 0)
       : [];
 
-    return cleaned;
+    // De-duplicate by slug but keep first original-cased value for display
+    const seen = new Set<string>();
+    const unique: string[] = [];
+    cleaned.forEach((value) => {
+      const slug = toSlug(value);
+      if (!seen.has(slug)) {
+        seen.add(slug);
+        unique.push(value.trim());
+      }
+    });
+
+    return unique;
   },
 
   // Create job (recruiter only)
@@ -64,8 +84,22 @@ export const jobService = {
   },
 
   // Get recruiter's jobs
-  getMyJobs: async (): Promise<{ jobs: Job[]; count: number }> => {
-    const response = await api.get('/jobs/my/jobs');
+  getMyJobs: async (
+    options?: {
+      signal?: AbortSignal;
+      timeoutMs?: number;
+      page?: number;
+      limit?: number;
+    }
+  ): Promise<{ jobs: Job[]; count: number; pagination?: any }> => {
+    const response = await api.get('/jobs/my/jobs', {
+      signal: options?.signal,
+      timeout: options?.timeoutMs,
+      params: {
+        page: options?.page,
+        limit: options?.limit,
+      },
+    });
     return response.data.data;
   },
 };

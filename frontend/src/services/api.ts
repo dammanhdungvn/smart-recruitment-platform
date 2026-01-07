@@ -28,6 +28,11 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<any>) => {
+    // Ignore cancellation/abort so individual callers can decide how to notify
+    if (axios.isCancel(error) || error.code === 'ECONNABORTED') {
+      return Promise.reject(error);
+    }
+
     // Network error
     if (!error.response) {
       toast.error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.');
@@ -43,15 +48,24 @@ api.interceptors.response.use(
         toast.error(message || 'Dữ liệu không hợp lệ');
         break;
       case 401:
-        toast.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        // Delay redirect to show toast
-        setTimeout(() => {
-          if (!window.location.pathname.includes('/login')) {
-            window.location.href = '/login';
-          }
-        }, 1000);
+        // Check if this is a login request (error from /auth/login)
+        const isLoginRequest = error.config?.url?.includes('/auth/login');
+        
+        if (isLoginRequest) {
+          // Login failed - show specific error message
+          toast.error(message || 'Email hoặc mật khẩu không đúng');
+        } else {
+          // Token expired - redirect to login
+          toast.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          // Delay redirect to show toast
+          setTimeout(() => {
+            if (!window.location.pathname.includes('/login')) {
+              window.location.href = '/login';
+            }
+          }, 1000);
+        }
         break;
       case 403:
         toast.error('Bạn không có quyền truy cập');

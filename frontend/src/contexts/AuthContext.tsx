@@ -45,8 +45,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       // Cache user data
       localStorage.setItem("user", JSON.stringify(userData));
     } catch (error: any) {
-      // Only clear on auth errors
-      if (error?.response?.status === 401) {
+      // Clear on auth errors (401) or not found (404)
+      if (error?.response?.status === 401 || error?.response?.status === 404) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         setUser(null);

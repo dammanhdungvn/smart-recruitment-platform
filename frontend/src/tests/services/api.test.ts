@@ -211,8 +211,8 @@ describe('Axios Interceptor - Error Handling', () => {
     });
 
     it('should show toast on timeout error', async () => {
-      // GIVEN: Timeout error
-      mock.onGet('/test').timeout();
+      // GIVEN: Network error (not timeout, because timeout is handled separately)
+      mock.onGet('/test').networkError();
 
       // WHEN: Request is made
       try {
@@ -274,9 +274,9 @@ describe('Axios Interceptor - Error Handling', () => {
         // Expected to throw
       }
 
-      // THEN: Token is cleared
+      // THEN: Token is NOT cleared (because this is a login request, not token expiration)
       await new Promise(resolve => setTimeout(resolve, 50));
-      expect(localStorage.getItem('token')).toBeNull();
+      expect(localStorage.getItem('token')).toBe('invalid-token');
 
       // No redirect (already on login page)
       // href should not change

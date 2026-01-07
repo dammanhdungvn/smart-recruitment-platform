@@ -39,18 +39,25 @@ const RecruiterApplicationsPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (jobId) {
-      fetchApplications();
-    }
+    fetchApplications();
   }, [jobId]);
 
   const fetchApplications = async () => {
     setLoading(true);
     try {
-      const response = await applicationService.getJobApplications(
-        Number(jobId)
-      );
-      setApplications(response.data?.applications || []);
+      if (jobId) {
+        // Fetch applications for specific job
+        const response = await applicationService.getJobApplications(
+          Number(jobId)
+        );
+        setApplications(response.data?.applications || []);
+      } else {
+        // Fetch all applications for all recruiter's jobs
+        // We'll need to get all jobs first, then get applications for each
+        // For now, show a message that user should select a specific job
+        toast("Vui lòng chọn một công việc cụ thể để xem ứng viên");
+        setApplications([]);
+      }
     } catch (error: any) {
       toast.error(
         error.response?.data?.message || "Không thể tải danh sách ứng viên"
@@ -114,14 +121,32 @@ const RecruiterApplicationsPage: React.FC = () => {
     <Container maxWidth="lg">
       <Box sx={{ mt: 4, mb: 4 }}>
         <Button onClick={() => navigate("/recruiter/jobs")} sx={{ mb: 2 }}>
-          ← Quay lại
+          ← Quay lại quản lý tin
         </Button>
 
         <Typography variant="h4" gutterBottom>
-          Danh sách ứng viên ({applications.length})
+          {jobId
+            ? `Danh sách ứng viên (${applications.length})`
+            : "Tất cả ứng viên"}
         </Typography>
 
-        {applications.length === 0 ? (
+        {!jobId ? (
+          <Paper sx={{ p: 4, textAlign: "center" }}>
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              Chọn một công việc để xem ứng viên
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Vui lòng vào "Quản lý tin" và chọn "Xem ứng viên" cho công việc cụ
+              thể
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => navigate("/recruiter/jobs")}
+            >
+              Đi tới Quản lý tin
+            </Button>
+          </Paper>
+        ) : applications.length === 0 ? (
           <Paper sx={{ p: 4, textAlign: "center" }}>
             <Typography variant="body1" color="text.secondary">
               Chưa có ứng viên nào ứng tuyển

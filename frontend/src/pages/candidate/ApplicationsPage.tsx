@@ -108,9 +108,9 @@ const ApplicationsPage: React.FC = () => {
                             lineHeight: 1.4,
                           }}
                         >
-                          {app.job?.job_title ||
-                            app.Job?.job_title ||
-                            app.job_title ||
+                          {(app as any).job?.job_title ||
+                            (app as any).Job?.job_title ||
+                            (app as any).job_title ||
                             "N/A"}
                         </Typography>
                         <Typography
@@ -118,7 +118,10 @@ const ApplicationsPage: React.FC = () => {
                           color="text.secondary"
                           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
                         >
-                          {app.job?.city || app.Job?.city || app.city || ""}
+                          {(app as any).job?.city ||
+                            (app as any).Job?.city ||
+                            (app as any).city ||
+                            ""}
                         </Typography>
                       </TableCell>
                       <TableCell>{formatDate(app.applied_at)}</TableCell>

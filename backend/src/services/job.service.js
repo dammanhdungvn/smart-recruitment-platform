@@ -167,19 +167,24 @@ const getJobById = async (jobId) => {
 /**
  * Get jobs by recruiter
  */
-const getJobsByRecruiter = async (userId) => {
-  const jobs = await Job.findAll({
+const getJobsByRecruiter = async (userId, options = {}) => {
+  let page = options.page && options.page > 0 ? options.page : 1;
+  let limit = options.limit && options.limit > 0 ? options.limit : 10;
+  if (limit > 50) limit = 50;
+  const offset = (page - 1) * limit;
+
+  const { rows, count } = await Job.findAndCountAll({
     where: { user_id: userId },
     order: [["created_at", "DESC"]],
-    include: [
-      {
-        model: Application,
-        as: "applications",
-      },
-    ],
+    offset,
+    limit,
+    // Drop heavy associations for listing to keep response light
+    attributes: {
+      exclude: ["description", "requirements", "benefits"],
+    },
   });
 
-  return jobs;
+  return { rows, count, page, limit };
 };
 
 /**

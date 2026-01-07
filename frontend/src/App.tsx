@@ -47,6 +47,10 @@ const AdminResumeManagement = lazy(
   () => import("./pages/admin/ResumeManagement")
 );
 
+const CandidateSettings = lazy(() => import("./pages/candidate/SettingsPage"));
+const RecruiterSettings = lazy(() => import("./pages/recruiter/SettingsPage"));
+const AdminSettings = lazy(() => import("./pages/admin/SettingsPage"));
+
 const theme = createTheme({
   palette: {
     primary: {
@@ -92,12 +96,10 @@ function App() {
             />
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
-                {/* Public Routes */}
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
 
-                {/* Candidate Routes */}
                 <Route
                   path="/candidate/dashboard"
                   element={
@@ -138,8 +140,15 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/candidate/settings"
+                  element={
+                    <ProtectedRoute allowedRoles={["candidate"]}>
+                      <CandidateSettings />
+                    </ProtectedRoute>
+                  }
+                />
 
-                {/* Recruiter Routes */}
                 <Route
                   path="/recruiter/dashboard"
                   element={
@@ -157,6 +166,14 @@ function App() {
                   }
                 />
                 <Route
+                  path="/recruiter/applications"
+                  element={
+                    <ProtectedRoute allowedRoles={["recruiter"]}>
+                      <RecruiterApplicationsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/recruiter/applications/:jobId"
                   element={
                     <ProtectedRoute allowedRoles={["recruiter"]}>
@@ -164,8 +181,15 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/recruiter/settings"
+                  element={
+                    <ProtectedRoute allowedRoles={["recruiter"]}>
+                      <RecruiterSettings />
+                    </ProtectedRoute>
+                  }
+                />
 
-                {/* Admin Routes */}
                 <Route
                   path="/admin/dashboard"
                   element={
@@ -206,8 +230,15 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/admin/settings"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <AdminSettings />
+                    </ProtectedRoute>
+                  }
+                />
 
-                {/* 404 */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>

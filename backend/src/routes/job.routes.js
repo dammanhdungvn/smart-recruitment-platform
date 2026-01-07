@@ -188,10 +188,24 @@ router.post(
  * @swagger
  * /api/jobs/my/jobs:
  *   get:
- *     summary: Get jobs created by current recruiter
+ *     summary: Get jobs created by current recruiter (paginated)
  *     tags: [Jobs]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Page size (default 20)
  *     responses:
  *       200:
  *         description: Jobs retrieved

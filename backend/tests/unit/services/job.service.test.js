@@ -120,10 +120,11 @@ describe("Job Service", () => {
       await createTestJob(recruiter.id, { job_title: "Job 1" });
       await createTestJob(recruiter.id, { job_title: "Job 2" });
 
-      const jobs = await jobService.getJobsByRecruiter(recruiter.id);
+      const result = await jobService.getJobsByRecruiter(recruiter.id);
 
-      expect(jobs.length).toBe(2);
-      jobs.forEach((job) => {
+      expect(result.rows.length).toBe(2);
+      expect(result.count).toBe(2);
+      result.rows.forEach((job) => {
         expect(job.user_id).toBe(recruiter.id);
       });
     });
@@ -134,9 +135,10 @@ describe("Job Service", () => {
         role: "recruiter",
       });
 
-      const jobs = await jobService.getJobsByRecruiter(newRecruiter.id);
+      const result = await jobService.getJobsByRecruiter(newRecruiter.id);
 
-      expect(jobs.length).toBe(0);
+      expect(result.rows.length).toBe(0);
+      expect(result.count).toBe(0);
     });
   });
 

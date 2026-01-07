@@ -59,19 +59,14 @@ const createTestJob = async (userId, overrides = {}) => {
     normalized.city = overrides.location;
     delete normalized.location;
   }
-  if (overrides.category) {
-    normalized.job_fields = overrides.category;
-    delete normalized.category;
-  }
+  // Keep category as-is since Job model has a category field
 
   const job = await Job.create({ ...defaultData, ...normalized });
   // Expose API-friendly aliases for downstream assertions in tests
   job.setDataValue("title", job.job_title);
   job.setDataValue("location", job.city);
-  job.setDataValue("category", job.job_fields);
   job.title = job.job_title;
   job.location = job.city;
-  job.category = job.job_fields;
   return job;
 };
 

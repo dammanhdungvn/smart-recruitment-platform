@@ -89,12 +89,12 @@ const Navbar: React.FC = () => {
         {
           label: "Ứng viên",
           icon: <SupervisorAccount fontSize="small" />,
-          onClick: () => navigate("/recruiter/dashboard"),
+          onClick: () => navigate("/recruiter/applications"),
         },
         {
           label: "Cài đặt",
           icon: <Settings fontSize="small" />,
-          onClick: () => navigate(getDashboardPath()),
+          onClick: () => navigate("/recruiter/settings"),
         },
       ];
     }
@@ -148,7 +148,7 @@ const Navbar: React.FC = () => {
         {
           label: "Ứng viên đã ứng tuyển",
           icon: <SupervisorAccount fontSize="small" />,
-          onClick: () => navigate("/recruiter/dashboard"),
+          onClick: () => navigate("/recruiter/applications"),
         }
       );
     }
@@ -164,7 +164,17 @@ const Navbar: React.FC = () => {
     items.push({
       label: "Cài đặt tài khoản",
       icon: <Settings fontSize="small" />,
-      onClick: () => navigate(getDashboardPath()),
+      onClick: () => {
+        if (user.role === "recruiter") {
+          navigate("/recruiter/settings");
+        } else if (user.role === "candidate") {
+          navigate("/candidate/settings");
+        } else if (user.role === "admin") {
+          navigate("/admin/settings");
+        } else {
+          navigate("/");
+        }
+      },
     });
 
     return items;
@@ -189,10 +199,11 @@ const Navbar: React.FC = () => {
       position="sticky"
       color="default"
       sx={{
-        backdropFilter: "blur(14px)",
-        background: "rgba(255,255,255,0.9)",
-        borderBottom: "1px solid rgba(0,0,0,0.06)",
-        boxShadow: "0 10px 40px rgba(15,23,42,0.06)",
+        backdropFilter: "blur(16px)",
+        background:
+          "linear-gradient(90deg, rgba(255,255,255,0.92), rgba(255,255,255,0.86))",
+        borderBottom: "1px solid rgba(0,0,0,0.04)",
+        boxShadow: "0 12px 40px rgba(15,23,42,0.08)",
       }}
     >
       <Container maxWidth={false} disableGutters>
@@ -215,35 +226,53 @@ const Navbar: React.FC = () => {
               fontWeight: 800,
               letterSpacing: 0.4,
               ml: "30px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 1,
             }}
             onClick={() => navigate("/")}
           >
             Tuyển dụng Thông minh
+            <Chip
+              label="Beta"
+              size="small"
+              color="primary"
+              sx={{ height: 20, fontWeight: 700, letterSpacing: 0 }}
+            />
           </Typography>
 
           {user ? (
             <>
               <Stack
                 direction="row"
-                spacing={0}
                 sx={{
                   justifyContent: "space-evenly",
                   alignItems: "center",
                   width: "100%",
+                  px: 4,
+                  columnGap: 2.5,
                 }}
               >
                 <Button
                   color="inherit"
                   onClick={() => navigate(getDashboardPath())}
                   sx={{
-                    borderRadius: 12,
-                    px: 2.5,
+                    borderRadius: 14,
+                    px: 2.75,
                     textTransform: "none",
-                    fontWeight: 700,
-                    bgcolor: "primary.main",
-                    color: "white",
-                    boxShadow: "0 10px 30px rgba(59,130,246,0.35)",
-                    "&:hover": { bgcolor: "primary.dark" },
+                    fontWeight: 800,
+                    bgcolor:
+                      "linear-gradient(135deg, rgba(59,130,246,0.1), rgba(99,102,241,0.06))",
+                    color: "#1d4ed8",
+                    border: "1px solid rgba(37,99,235,0.24)",
+                    boxShadow: "0 10px 22px rgba(37,99,235,0.18)",
+                    "&:hover": {
+                      bgcolor:
+                        "linear-gradient(135deg, rgba(59,130,246,0.18), rgba(99,102,241,0.12))",
+                      color: "#1e3a8a",
+                      boxShadow: "0 12px 26px rgba(37,99,235,0.26)",
+                      transform: "translateY(-1px)",
+                    },
                   }}
                 >
                   Dashboard
@@ -256,16 +285,19 @@ const Navbar: React.FC = () => {
                     startIcon={item.icon}
                     onClick={item.onClick}
                     sx={{
-                      borderRadius: 12,
-                      px: 1.5,
+                      borderRadius: 999,
+                      px: 1.75,
                       py: 1,
                       textTransform: "none",
                       fontWeight: 600,
                       color: "text.primary",
-                      bgcolor: "rgba(0,0,0,0.03)",
+                      bgcolor: "rgba(15,23,42,0.04)",
                       "&:hover": {
-                        bgcolor: "rgba(59,130,246,0.12)",
+                        bgcolor:
+                          "linear-gradient(135deg, rgba(59,130,246,0.12), rgba(99,102,241,0.12))",
                         color: "primary.main",
+                        boxShadow: "0 8px 20px rgba(59,130,246,0.12)",
+                        transform: "translateY(-1px)",
                       },
                     }}
                   >
@@ -280,12 +312,12 @@ const Navbar: React.FC = () => {
                   color="primary"
                   sx={{
                     p: 0.5,
-                    borderRadius: 2,
-                    border: "1px solid rgba(0,0,0,0.08)",
-                    boxShadow: "0 6px 18px rgba(15,23,42,0.14)",
+                    borderRadius: 12,
+                    border: "1px solid rgba(0,0,0,0.06)",
+                    boxShadow: "0 8px 22px rgba(15,23,42,0.16)",
                     transition: "all 0.25s ease",
                     "&:hover": {
-                      boxShadow: "0 10px 28px rgba(15,23,42,0.18)",
+                      boxShadow: "0 12px 30px rgba(15,23,42,0.2)",
                       transform: "translateY(-2px)",
                     },
                   }}
@@ -397,11 +429,61 @@ const Navbar: React.FC = () => {
               </Box>
             </>
           ) : !loading ? (
-            <Box>
-              <Button color="inherit" component={RouterLink} to="/login">
+            <Box
+              sx={{
+                justifySelf: "flex-end",
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                pr: "30px",
+              }}
+            >
+              <Button
+                color="inherit"
+                component={RouterLink}
+                to="/login"
+                sx={{
+                  borderRadius: 999,
+                  px: 2.25,
+                  py: 1,
+                  textTransform: "none",
+                  fontWeight: 700,
+                  bgcolor: "rgba(15,23,42,0.04)",
+                  boxShadow: "0 6px 14px rgba(15,23,42,0.08)",
+                  "&:hover": {
+                    bgcolor:
+                      "linear-gradient(135deg, rgba(59,130,246,0.12), rgba(99,102,241,0.12))",
+                    color: "primary.main",
+                    boxShadow: "0 10px 24px rgba(59,130,246,0.12)",
+                    transform: "translateY(-1px)",
+                  },
+                }}
+              >
                 Đăng nhập
               </Button>
-              <Button color="inherit" component={RouterLink} to="/register">
+              <Button
+                color="inherit"
+                component={RouterLink}
+                to="/register"
+                sx={{
+                  borderRadius: 999,
+                  px: 2.5,
+                  py: 1,
+                  textTransform: "none",
+                  fontWeight: 800,
+                  bgcolor: "#ffffff",
+                  color: "#2563eb",
+                  border: "1px solid rgba(37,99,235,0.22)",
+                  boxShadow: "0 10px 24px rgba(37,99,235,0.18)",
+                  "&:hover": {
+                    bgcolor:
+                      "linear-gradient(135deg, rgba(59,130,246,0.08), rgba(99,102,241,0.08))",
+                    color: "#1d4ed8",
+                    boxShadow: "0 14px 30px rgba(37,99,235,0.26)",
+                    transform: "translateY(-1px)",
+                  },
+                }}
+              >
                 Đăng ký
               </Button>
             </Box>
