@@ -43,7 +43,7 @@ cd <project-folder>
   ```bash
   cd .\scripts
 
-  .\start.cmd
+  .\start-all.cmd
 
   ```
 
