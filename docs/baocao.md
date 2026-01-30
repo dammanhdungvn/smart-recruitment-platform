@@ -451,45 +451,219 @@ Hệ thống được xây dựng theo mô hình **Client-Server** với sự t�
 
 ### 2.2. RESTful API
 
-**REST (Representational State Transfer)** là kiến trúc thiết kế API được sử dụng trong hệ thống.
+#### 2.2.1. REST là gì?
 
-**Nguyên tắc REST được áp dụng:**
+**REST (Representational State Transfer)** là một kiến trúc phần mềm dùng để thiết kế các hệ thống phân tán, đặc biệt là các dịch vụ web. REST được Roy Fielding giới thiệu lần đầu trong luận án tiến sĩ của ông vào năm 2000.
 
-| Nguyên tắc | Mô tả | Ví dụ trong hệ thống |
+REST không phải là một giao thức hay tiêu chuẩn, mà là một **tập hợp các ràng buộc kiến trúc (architectural constraints)** mà khi được áp dụng sẽ tạo ra một hệ thống có các đặc tính như scalability, simplicity, và reliability.
+
+#### 2.2.2. Các nguyên tắc của REST
+
+**6 nguyên tắc cơ bản của REST:**
+
+| Nguyên tắc | Mô tả | Áp dụng trong hệ thống |
 |------------|-------|---------------------|
-| **Stateless** | Mỗi request chứa đủ thông tin để xử lý | JWT token trong header |
-| **Client-Server** | Tách biệt client và server | React app ↔ Express API |
-| **Uniform Interface** | Giao diện thống nhất | `GET /api/jobs`, `POST /api/jobs` |
-| **Layered System** | Hệ thống phân lớp | Routes → Controllers → Services → Models |
+| **Client-Server** | Tách biệt giao diện người dùng (client) và lưu trữ dữ liệu (server). Cho phép phát triển độc lập hai phía | React frontend hoàn toàn độc lập với Express backend |
+| **Stateless** | Server không lưu trạng thái của client. Mỗi request phải chứa đầy đủ thông tin để xử lý | Sử dụng JWT token trong header, server không lưu session |
+| **Cacheable** | Responses phải định nghĩa rõ có thể cache hay không để tối ưu hiệu năng | HTTP cache headers cho static resources |
+| **Uniform Interface** | Giao diện thống nhất giữa các components, sử dụng các HTTP methods chuẩn | GET, POST, PUT, PATCH, DELETE với URL patterns nhất quán |
+| **Layered System** | Hệ thống có thể được chia thành nhiều lớp, mỗi lớp chỉ biết về lớp kế tiếp | Routes → Controllers → Services → Models |
+| **Code on Demand** | (Optional) Server có thể gửi executable code về client | Không áp dụng trong dự án |
 
-**Quy ước HTTP Methods:**
+#### 2.2.3. HTTP Methods trong RESTful API
 
-| Method | Mục đích | Ví dụ |
-|--------|----------|-------|
-| GET | Lấy dữ liệu | `GET /api/jobs` - Lấy danh sách jobs |
-| POST | Tạo mới | `POST /api/jobs` - Tạo job mới |
-| PUT | Cập nhật toàn bộ | `PUT /api/jobs/:id` - Cập nhật job |
-| PATCH | Cập nhật một phần | `PATCH /api/jobs/:id/status` - Cập nhật status |
-| DELETE | Xóa | `DELETE /api/jobs/:id` - Xóa job |
+**HTTP Methods** (hay còn gọi là HTTP Verbs) định nghĩa loại hành động cần thực hiện trên resource:
+
+| Method | Mục đích | CRUD Operation | Idempotent | Safe |
+|--------|----------|----------------|------------|------|
+| **GET** | Lấy dữ liệu | Read | ✅ Có | ✅ Có |
+| **POST** | Tạo mới resource | Create | ❌ Không | ❌ Không |
+| **PUT** | Cập nhật toàn bộ resource | Update (full) | ✅ Có | ❌ Không |
+| **PATCH** | Cập nhật một phần resource | Update (partial) | ✅ Có | ❌ Không |
+| **DELETE** | Xóa resource | Delete | ✅ Có | ❌ Không |
+
+**Giải thích:**
+- **Idempotent:** Gọi nhiều lần cho kết quả giống nhau (PUT cùng data 10 lần = 1 lần)
+- **Safe:** Không thay đổi trạng thái server (chỉ GET là safe)
+
+#### 2.2.4. RESTful URL Design
+
+Thiết kế URL trong RESTful API tuân theo các quy tắc:
+
+| Quy tắc | Ví dụ Đúng | Ví dụ Sai |
+|---------|------------|-----------|
+| Sử dụng danh từ số nhiều | `/api/jobs` | `/api/getJobs` |
+| Dùng ID để chỉ định resource | `/api/jobs/123` | `/api/job?id=123` |
+| Nested resources cho relationships | `/api/jobs/123/applications` | `/api/applications?jobId=123` |
+| Query params cho filtering | `/api/jobs?city=HCM&type=fulltime` | `/api/jobs/HCM/fulltime` |
+| Kebab-case cho multi-word | `/api/job-categories` | `/api/jobCategories` |
+
+**Ví dụ trong hệ thống:**
+
+```
+GET    /api/jobs                    → Lấy danh sách jobs (có filter, pagination)
+GET    /api/jobs/123                → Lấy chi tiết job có id=123
+POST   /api/jobs                    → Tạo job mới
+PUT    /api/jobs/123                → Cập nhật toàn bộ job 123
+PATCH  /api/jobs/123/status         → Chỉ cập nhật status của job 123
+DELETE /api/jobs/123                → Xóa job 123
+GET    /api/jobs/123/applications   → Lấy danh sách applications của job 123
+```
+
+#### 2.2.5. HTTP Status Codes
+
+RESTful API sử dụng HTTP status codes để thông báo kết quả:
+
+| Code | Ý nghĩa | Sử dụng khi |
+|------|---------|-------------|
+| **200 OK** | Thành công | GET, PUT, PATCH thành công |
+| **201 Created** | Tạo thành công | POST tạo resource mới |
+| **204 No Content** | Thành công, không có body | DELETE thành công |
+| **400 Bad Request** | Request không hợp lệ | Validation failed |
+| **401 Unauthorized** | Chưa xác thực | Thiếu hoặc sai token |
+| **403 Forbidden** | Không có quyền | Không đủ permission |
+| **404 Not Found** | Không tìm thấy | Resource không tồn tại |
+| **500 Internal Server Error** | Lỗi server | Exception trong server |
 
 ### 2.3. Công nghệ Backend
 
 #### 2.3.1. Node.js
 
-**Node.js** là runtime environment cho JavaScript phía server, được xây dựng trên V8 JavaScript engine của Chrome.
+**a) Node.js là gì?**
 
-**Đặc điểm chính:**
-- **Event-driven, non-blocking I/O:** Xử lý nhiều requests đồng thời hiệu quả
-- **NPM ecosystem:** Kho thư viện phong phú với hơn 1 triệu packages
-- **JavaScript everywhere:** Sử dụng cùng ngôn ngữ cho cả frontend và backend
+**Node.js** là một môi trường runtime JavaScript được xây dựng trên engine V8 của Google Chrome. Trước khi có Node.js, JavaScript chỉ có thể chạy trong trình duyệt web. Node.js cho phép JavaScript chạy ở phía server, mở ra khả năng phát triển ứng dụng full-stack bằng một ngôn ngữ duy nhất.
 
-**Phiên bản sử dụng:** Node.js LTS
+Node.js được tạo ra bởi Ryan Dahl vào năm 2009 và hiện được duy trì bởi OpenJS Foundation. Nó đã trở thành một trong những công nghệ phổ biến nhất cho việc xây dựng ứng dụng web server-side.
+
+**b) Kiến trúc Event-driven và Non-blocking I/O**
+
+Node.js sử dụng mô hình **Event-driven** (hướng sự kiện) và **Non-blocking I/O** (không chặn I/O), cho phép xử lý hàng nghìn kết nối đồng thời trên một single thread. Đây là điểm khác biệt quan trọng so với các server truyền thống như Apache hay Tomcat sử dụng multi-threading.
+
+**Nguyên lý hoạt động:**
+
+1. **Event Loop:** Node.js chạy một vòng lặp sự kiện vô hạn, liên tục kiểm tra và xử lý các events
+2. **Non-blocking I/O:** Khi có tác vụ I/O (đọc file, query database), Node.js không chờ đợi mà tiếp tục xử lý requests khác
+3. **Callback Queue:** Khi I/O hoàn thành, callback được đưa vào hàng đợi để Event Loop xử lý
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     NODE.JS EVENT LOOP                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│    ┌──────────┐    ┌──────────┐    ┌──────────┐                 │
+│    │ Request 1│    │ Request 2│    │ Request 3│  ...            │
+│    └────┬─────┘    └────┬─────┘    └────┬─────┘                 │
+│         │               │               │                        │
+│         ▼               ▼               ▼                        │
+│    ┌─────────────────────────────────────────────────────┐      │
+│    │              EVENT QUEUE                             │      │
+│    │  (Hàng đợi các sự kiện chờ xử lý)                   │      │
+│    └─────────────────────┬───────────────────────────────┘      │
+│                          │                                       │
+│                          ▼                                       │
+│    ┌─────────────────────────────────────────────────────┐      │
+│    │         SINGLE THREAD EVENT LOOP                     │      │
+│    │   (Xử lý tuần tự, không blocking)                   │      │
+│    └─────────────────────┬───────────────────────────────┘      │
+│                          │                                       │
+│         ┌────────────────┼────────────────┐                     │
+│         ▼                ▼                ▼                     │
+│    ┌─────────┐    ┌───────────┐    ┌───────────┐               │
+│    │Database │    │File System│    │  Network  │               │
+│    │  I/O    │    │    I/O    │    │    I/O    │               │
+│    └─────────┘    └───────────┘    └───────────┘               │
+│      (Async)        (Async)          (Async)                    │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**c) NPM (Node Package Manager)**
+
+**NPM** là trình quản lý package lớn nhất thế giới với hơn 2 triệu packages. NPM cho phép developers:
+
+- **Cài đặt dependencies:** `npm install express`
+- **Quản lý versions:** Sử dụng semantic versioning (semver)
+- **Scripts automation:** Định nghĩa scripts trong package.json
+- **Chia sẻ code:** Publish packages cho cộng đồng
+
+**d) Ưu điểm của Node.js:**
+
+| Ưu điểm | Giải thích |
+|---------|------------|
+| **High Performance** | V8 engine biên dịch JavaScript thành machine code, đạt tốc độ gần với C++ |
+| **Scalability** | Xử lý hàng nghìn connections đồng thời với ít resources |
+| **JavaScript everywhere** | Dùng chung ngôn ngữ cho frontend và backend, giảm context switching |
+| **Rich Ecosystem** | NPM cung cấp packages cho mọi nhu cầu development |
+| **Active Community** | Cộng đồng lớn, nhiều tài liệu và support |
+| **Cross-platform** | Chạy trên Windows, Linux, macOS |
+
+**Phiên bản sử dụng:** Node.js LTS (Long Term Support)
 
 #### 2.3.2. Express.js
 
-**Express.js** là web framework tối giản và linh hoạt cho Node.js.
+**a) Express.js là gì?**
 
-**Các tính năng được sử dụng:**
+**Express.js** là một web application framework tối giản (minimal) và linh hoạt (flexible) cho Node.js. Express cung cấp một tập hợp các tính năng mạnh mẽ để xây dựng web applications và APIs một cách nhanh chóng và dễ dàng.
+
+Express.js được xem là **de facto standard** cho việc xây dựng web applications với Node.js, được sử dụng bởi các công ty lớn như IBM, Uber, Netflix, và PayPal.
+
+**b) Kiến trúc Middleware của Express**
+
+**Middleware** là trái tim của Express.js. Nó là các hàm có quyền truy cập vào request object (req), response object (res), và hàm next() trong chu trình request-response.
+
+**Middleware có thể:**
+- Thực thi bất kỳ code nào
+- Thay đổi request và response objects
+- Kết thúc chu trình request-response
+- Gọi middleware tiếp theo trong stack
+
+```
+┌───────────────────────────────────────────────────────────────────┐
+│                    EXPRESS MIDDLEWARE PIPELINE                     │
+├───────────────────────────────────────────────────────────────────┤
+│                                                                    │
+│   REQUEST                                                          │
+│      │                                                             │
+│      ▼                                                             │
+│   ┌──────────────────┐                                            │
+│   │  Body Parser     │  → Parse JSON/URL-encoded body             │
+│   └────────┬─────────┘                                            │
+│            ▼                                                       │
+│   ┌──────────────────┐                                            │
+│   │  CORS Middleware │  → Handle Cross-Origin requests            │
+│   └────────┬─────────┘                                            │
+│            ▼                                                       │
+│   ┌──────────────────┐                                            │
+│   │  Auth Middleware │  → Verify JWT token                        │
+│   └────────┬─────────┘                                            │
+│            ▼                                                       │
+│   ┌──────────────────┐                                            │
+│   │  Validation      │  → Validate input data                     │
+│   └────────┬─────────┘                                            │
+│            ▼                                                       │
+│   ┌──────────────────┐                                            │
+│   │  Route Handler   │  → Process business logic                  │
+│   └────────┬─────────┘                                            │
+│            ▼                                                       │
+│   ┌──────────────────┐                                            │
+│   │  Error Handler   │  → Handle errors globally                  │
+│   └────────┬─────────┘                                            │
+│            ▼                                                       │
+│   RESPONSE                                                         │
+│                                                                    │
+└───────────────────────────────────────────────────────────────────┘
+```
+
+**c) Các tính năng chính của Express.js:**
+
+| Tính năng | Mô tả |
+|-----------|-------|
+| **Routing** | Định nghĩa endpoints và xử lý HTTP methods một cách rõ ràng |
+| **Middleware** | Pipeline xử lý request/response với khả năng mở rộng cao |
+| **Template Engines** | Hỗ trợ Pug, EJS, Handlebars cho server-side rendering |
+| **Static Files** | Phục vụ files tĩnh (CSS, JS, images) với một dòng code |
+| **Error Handling** | Xử lý lỗi tập trung, dễ dàng debug và logging |
+
+**d) Ví dụ cấu hình Express trong dự án:**
 
 ```javascript
 // Middleware pipeline
@@ -512,15 +686,70 @@ app.use(errorHandler);
 
 #### 2.3.3. Sequelize ORM
 
-**Sequelize** là ORM (Object-Relational Mapping) cho Node.js, hỗ trợ MySQL, PostgreSQL, SQLite.
+**a) ORM (Object-Relational Mapping) là gì?**
 
-**Ưu điểm:**
-- Định nghĩa models bằng JavaScript
-- Tự động tạo và migration database
-- Query builder mạnh mẽ
-- Hỗ trợ associations (1-1, 1-N, N-N)
+**ORM (Object-Relational Mapping)** là một kỹ thuật lập trình cho phép chuyển đổi dữ liệu giữa các hệ thống không tương thích trong các ngôn ngữ lập trình hướng đối tượng. Cụ thể, ORM tạo ra một "cầu nối" giữa cơ sở dữ liệu quan hệ (relational database) và các đối tượng trong ngôn ngữ lập trình.
 
-**Ví dụ định nghĩa Model:**
+**Nguyên lý hoạt động của ORM:**
+
+1. **Mapping (Ánh xạ):** ORM ánh xạ các bảng (tables) trong database thành các lớp (classes) trong code, các cột (columns) thành các thuộc tính (properties), và các hàng (rows) thành các đối tượng (objects).
+
+2. **Abstraction (Trừu tượng hóa):** Thay vì viết trực tiếp câu lệnh SQL, lập trình viên làm việc với các đối tượng và phương thức. ORM sẽ tự động chuyển đổi các thao tác này thành các câu lệnh SQL tương ứng.
+
+3. **Data Synchronization:** ORM đảm bảo dữ liệu trong objects luôn đồng bộ với dữ liệu trong database thông qua các cơ chế như lazy loading, eager loading.
+
+**Ví dụ minh họa ánh xạ ORM:**
+
+```
+┌─────────────────────────┐         ┌─────────────────────────┐
+│   DATABASE (MySQL)       │         │   APPLICATION CODE      │
+├─────────────────────────┤   ORM   ├─────────────────────────┤
+│ Table: users            │ ◄─────► │ Class: User             │
+│   - id (INT)            │         │   - id: number          │
+│   - email (VARCHAR)     │         │   - email: string       │
+│   - password (VARCHAR)  │         │   - password: string    │
+│   - full_name (VARCHAR) │         │   - fullName: string    │
+└─────────────────────────┘         └─────────────────────────┘
+```
+
+**So sánh: SQL thuần vs ORM**
+
+| Tiêu chí | SQL thuần | ORM (Sequelize) |
+|----------|-----------|-----------------|
+| Tìm user | `SELECT * FROM users WHERE id = 1` | `User.findByPk(1)` |
+| Tạo user | `INSERT INTO users (email, name) VALUES (...)` | `User.create({email, name})` |
+| Cập nhật | `UPDATE users SET name = '...' WHERE id = 1` | `user.update({name: '...'})` |
+| Xóa | `DELETE FROM users WHERE id = 1` | `user.destroy()` |
+
+**Lợi ích của ORM:**
+
+| Lợi ích | Giải thích |
+|---------|------------|
+| **Tăng năng suất phát triển** | Giảm thiểu việc viết SQL thủ công, tập trung vào business logic |
+| **Bảo mật cao hơn** | Tự động escape input, phòng chống SQL Injection |
+| **Code dễ đọc và bảo trì** | Làm việc với objects thay vì strings SQL |
+| **Database agnostic** | Dễ dàng chuyển đổi giữa các loại database (MySQL → PostgreSQL) |
+| **Type safety** | Khi kết hợp với TypeScript, đảm bảo kiểu dữ liệu chính xác |
+| **Relationships** | Xử lý quan hệ giữa các bảng một cách trực quan |
+
+**b) Sequelize - ORM cho Node.js**
+
+**Sequelize** là một ORM dựa trên Promise cho Node.js, hỗ trợ các hệ quản trị cơ sở dữ liệu quan hệ phổ biến như PostgreSQL, MySQL, MariaDB, SQLite và SQL Server.
+
+**Các tính năng chính của Sequelize:**
+
+| Tính năng | Mô tả |
+|-----------|-------|
+| **Model Definitions** | Định nghĩa cấu trúc bảng bằng JavaScript objects |
+| **Associations** | Hỗ trợ các quan hệ: HasOne, HasMany, BelongsTo, BelongsToMany |
+| **Migrations** | Quản lý phiên bản database schema, dễ dàng rollback |
+| **Seeders** | Tạo dữ liệu mẫu cho database |
+| **Transactions** | Đảm bảo tính toàn vẹn dữ liệu với ACID |
+| **Query Builder** | Xây dựng truy vấn phức tạp một cách trực quan |
+| **Hooks/Lifecycle** | Thực thi logic trước/sau các thao tác CRUD |
+| **Validation** | Validate dữ liệu trước khi lưu vào database |
+
+**c) Ví dụ định nghĩa Model với Sequelize:**
 
 ```javascript
 const User = sequelize.define("User", {
@@ -557,22 +786,83 @@ const User = sequelize.define("User", {
 
 #### 2.4.1. React 19
 
-**React** là thư viện JavaScript cho xây dựng giao diện người dùng, phát triển bởi Facebook.
+**a) React là gì?**
 
-**Các tính năng React được sử dụng:**
+**React** là một thư viện JavaScript mã nguồn mở cho việc xây dựng giao diện người dùng (User Interface), được phát triển và duy trì bởi Meta (Facebook) cùng cộng đồng developers.
 
-| Tính năng | Mô tả | Áp dụng |
-|-----------|-------|---------|
-| **Functional Components** | Components dạng hàm | Toàn bộ components |
-| **Hooks** | useState, useEffect, useCallback | State management |
-| **Context API** | Global state | AuthContext |
-| **Lazy Loading** | Code splitting | Lazy load pages |
-| **Suspense** | Loading fallback | Loading states |
+React ra đời năm 2013 và nhanh chóng trở thành một trong những thư viện frontend phổ biến nhất thế giới, được sử dụng bởi các công ty lớn như Facebook, Instagram, Netflix, Airbnb, Uber, và nhiều công ty khác.
 
-**Ví dụ cấu trúc component:**
+**b) Single Page Application (SPA) là gì?**
+
+**SPA (Single Page Application)** là kiến trúc web application trong đó toàn bộ ứng dụng được tải một lần duy nhất, sau đó các tương tác của người dùng chỉ cập nhật một phần của trang mà không cần reload toàn bộ.
+
+**So sánh SPA vs Traditional Web App:**
+
+| Tiêu chí | Traditional Web App | SPA (React) |
+|----------|---------------------|-------------|
+| **Page Load** | Mỗi click tải lại toàn bộ trang | Chỉ cập nhật phần thay đổi |
+| **User Experience** | Có thời gian chờ giữa các trang | Mượt mà như ứng dụng native |
+| **Server Load** | Server render HTML | Server chỉ cung cấp API/data |
+| **SEO** | Tốt hơn tự nhiên | Cần kỹ thuật đặc biệt (SSR, pre-rendering) |
+| **Bandwidth** | Tải nhiều HTML/CSS lặp lại | Tải lần đầu lớn, sau đó chỉ JSON |
+
+**Luồng hoạt động của SPA:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    SPA ARCHITECTURE                              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│   1. Initial Load:                                               │
+│   ┌──────────┐    GET /           ┌──────────┐                  │
+│   │  Browser │ ─────────────────► │  Server  │                  │
+│   │          │ ◄───────────────── │          │                  │
+│   └──────────┘  index.html +      └──────────┘                  │
+│                 bundle.js + CSS                                  │
+│                                                                  │
+│   2. Subsequent Interactions:                                    │
+│   ┌──────────┐    GET /api/data   ┌──────────┐                  │
+│   │  React   │ ─────────────────► │  API     │                  │
+│   │   App    │ ◄───────────────── │  Server  │                  │
+│   └──────────┘    JSON response   └──────────┘                  │
+│        │                                                         │
+│        │ Client-side routing                                     │
+│        │ (No page reload)                                        │
+│        ▼                                                         │
+│   ┌──────────┐                                                   │
+│   │  Update  │ → Only re-render changed components              │
+│   │   DOM    │                                                   │
+│   └──────────┘                                                   │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**c) Virtual DOM - Điểm mạnh của React**
+
+**Virtual DOM** là một bản sao nhẹ của Real DOM được giữ trong bộ nhớ. Khi state thay đổi, React sẽ:
+
+1. Tạo Virtual DOM mới
+2. So sánh (Diffing) với Virtual DOM cũ
+3. Tính toán thay đổi tối thiểu cần thiết
+4. Cập nhật Real DOM chỉ những phần thay đổi
+
+Quá trình này gọi là **Reconciliation**, giúp React đạt hiệu năng cao ngay cả với UI phức tạp.
+
+**d) Các tính năng React được sử dụng trong dự án:**
+
+| Tính năng | Mô tả | Áp dụng trong dự án |
+|-----------|-------|---------------------|
+| **Functional Components** | Components dạng hàm, đơn giản hơn class | Toàn bộ components |
+| **Hooks** | useState, useEffect, useCallback, useMemo | State management, side effects |
+| **Context API** | Global state không cần Redux | AuthContext cho authentication |
+| **Lazy Loading** | Tải components khi cần (code splitting) | Lazy load pages |
+| **Suspense** | Hiển thị fallback khi đang tải | Loading states |
+| **React Router** | Client-side routing | Điều hướng giữa các trang |
+
+**e) Ví dụ cấu trúc component trong dự án:**
 
 ```tsx
-// Lazy loading pages
+// Lazy loading pages - Chỉ tải khi người dùng truy cập
 const CandidateDashboard = lazy(() => import("./pages/candidate/CandidateDashboard"));
 const JobSearchPage = lazy(() => import("./pages/candidate/JobSearchPage"));
 
@@ -586,66 +876,116 @@ const JobSearchPage = lazy(() => import("./pages/candidate/JobSearchPage"));
 
 #### 2.4.2. TypeScript
 
-**TypeScript** là superset của JavaScript với static typing.
+**a) TypeScript là gì?**
 
-**Lợi ích:**
-- Phát hiện lỗi compile-time
-- IntelliSense tốt hơn trong IDE
-- Code dễ maintain và refactor
-- Documentation tự động qua types
+**TypeScript** là một ngôn ngữ lập trình mã nguồn mở được phát triển bởi Microsoft. Nó là một **superset của JavaScript**, có nghĩa là mọi code JavaScript hợp lệ cũng là code TypeScript hợp lệ, nhưng TypeScript bổ sung thêm **static typing** (kiểu tĩnh).
 
-**Ví dụ type definitions:**
+**b) Tại sao sử dụng TypeScript?**
+
+| Lợi ích | Giải thích |
+|---------|------------|
+| **Phát hiện lỗi sớm** | Lỗi type được phát hiện tại compile-time, không phải runtime |
+| **IntelliSense tốt hơn** | IDE có thể gợi ý code chính xác dựa trên types |
+| **Code dễ maintain** | Types giúp code tự document, người khác dễ hiểu hơn |
+| **Refactoring an toàn** | IDE có thể rename, move với độ tin cậy cao |
+| **Làm việc nhóm hiệu quả** | Interface định nghĩa rõ ràng "contract" giữa các module |
+
+**c) Ví dụ type definitions trong dự án:**
 
 ```typescript
+// Định nghĩa kiểu cho User
 interface User {
   id: number;
   email: string;
   full_name: string;
-  role: 'candidate' | 'recruiter' | 'admin';
-  phone?: string;
+  role: 'candidate' | 'recruiter' | 'admin';  // Union type - chỉ cho phép 3 giá trị
+  phone?: string;           // Optional property
   company?: string;
   avatar?: string;
   is_active: boolean;
 }
 
+// Định nghĩa kiểu cho Authentication Context
 interface AuthContextType {
-  user: User | null;
+  user: User | null;                                    // User hoặc null
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  register: (data: any) => Promise<void>;
-  updateProfile: (data: any) => Promise<void>;
+  register: (data: RegisterData) => Promise<void>;
+  updateProfile: (data: UpdateProfileData) => Promise<void>;
 }
 ```
 
-> **Source:** [frontend/src/types/user.types.ts](../smart-recruitment-platform/frontend/src/types/)
+> **Source:** [frontend/src/types/](../smart-recruitment-platform/frontend/src/types/)
 
 #### 2.4.3. Material-UI (MUI)
 
-**Material-UI** là React component library theo Material Design của Google.
+**a) Material-UI là gì?**
 
-**Các components sử dụng:**
-- Layout: Container, Grid, Box
-- Navigation: AppBar, Drawer, Tabs
-- Inputs: TextField, Select, Button
-- Data Display: Table, Card, Chip
-- Feedback: Alert, Snackbar, Dialog
+**Material-UI (MUI)** là một thư viện React component phổ biến nhất, triển khai **Material Design** - ngôn ngữ thiết kế được Google phát triển.
+
+MUI cung cấp một bộ components đẹp, có tính nhất quán cao, và dễ dàng customize theo brand của từng dự án.
+
+**b) Tại sao chọn Material-UI?**
+
+| Lý do | Chi tiết |
+|-------|----------|
+| **Design nhất quán** | Tuân theo Material Design guidelines |
+| **Responsive sẵn** | Tự động thích ứng với mọi kích thước màn hình |
+| **Accessibility** | Hỗ trợ screen readers và keyboard navigation |
+| **Theming** | Dễ dàng customize colors, typography, spacing |
+| **Rich components** | 50+ components sẵn có cho mọi nhu cầu |
+
+**c) Các components sử dụng trong dự án:**
+
+| Nhóm | Components |
+|------|------------|
+| **Layout** | Container, Grid, Box, Stack |
+| **Navigation** | AppBar, Drawer, Tabs, Breadcrumbs |
+| **Inputs** | TextField, Select, Autocomplete, Button, Checkbox |
+| **Data Display** | Table, DataGrid, Card, Chip, Avatar, Typography |
+| **Feedback** | Alert, Snackbar, Dialog, Skeleton, CircularProgress |
+| **Surfaces** | Paper, Accordion, Card |
 
 #### 2.4.4. Vite
 
-**Vite** là build tool thế hệ mới, nhanh hơn Webpack đáng kể.
+**a) Vite là gì?**
 
-**Đặc điểm:**
-- Hot Module Replacement (HMR) cực nhanh
-- ES modules native
-- Optimized production builds
+**Vite** (phát âm /vit/, tiếng Pháp nghĩa là "nhanh") là một build tool thế hệ mới cho frontend development, được tạo bởi Evan You (tác giả Vue.js).
+
+**b) Vite vs Webpack:**
+
+| Tiêu chí | Webpack | Vite |
+|----------|---------|------|
+| **Dev Server Start** | 10-30 giây | < 1 giây |
+| **HMR (Hot Module Replacement)** | 1-5 giây | Gần như tức thì |
+| **Bundling approach** | Bundle toàn bộ trước khi serve | Native ES modules (không bundle trong dev) |
+| **Production build** | Webpack | Rollup (optimized) |
+
+**c) Tại sao Vite nhanh?**
+
+1. **Native ES Modules:** Vite tận dụng ES modules của browser, không cần bundle trong development
+2. **esbuild:** Sử dụng esbuild (viết bằng Go) cho transpiling, nhanh hơn 10-100x so với JavaScript-based bundlers
+3. **Pre-bundling:** Chỉ pre-bundle dependencies (node_modules), source code serve trực tiếp
+
+**d) Cấu hình Vite trong dự án:**
 
 ```typescript
 // vite.config.ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5173
+    port: 5173,
+    proxy: {
+      '/api': 'http://localhost:5000'  // Proxy API requests to backend
+    }
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true
   }
 });
 ```
@@ -654,42 +994,110 @@ export default defineConfig({
 
 #### 2.5.1. MySQL
 
-**MySQL** là hệ quản trị cơ sở dữ liệu quan hệ (RDBMS) phổ biến nhất thế giới.
+**a) Hệ quản trị cơ sở dữ liệu quan hệ (RDBMS) là gì?**
 
-**Lý do chọn MySQL:**
-- Ổn định, hiệu năng cao
-- Hỗ trợ ACID transactions
-- Phù hợp với dữ liệu có cấu trúc rõ ràng
-- Hỗ trợ tốt bởi Sequelize ORM
+**RDBMS (Relational Database Management System)** là hệ thống quản lý cơ sở dữ liệu dựa trên mô hình quan hệ. Trong RDBMS:
 
-**Cấu hình database:**
-- Database name: `smart_recruitment`
-- Character set: `utf8mb4`
-- Collation: `utf8mb4_0900_ai_ci`
-- Storage Engine: InnoDB
+- Dữ liệu được tổ chức thành **bảng (tables)** với các hàng (rows) và cột (columns)
+- Các bảng có thể liên kết với nhau thông qua **khóa ngoại (foreign keys)**
+- Sử dụng **SQL (Structured Query Language)** để truy vấn và thao tác dữ liệu
+- Tuân thủ **ACID properties** đảm bảo tính toàn vẹn dữ liệu
+
+**ACID Properties:**
+
+| Property | Ý nghĩa | Giải thích |
+|----------|---------|------------|
+| **Atomicity** | Tính nguyên tử | Transaction hoàn thành toàn bộ hoặc rollback toàn bộ |
+| **Consistency** | Tính nhất quán | Database luôn ở trạng thái hợp lệ sau mỗi transaction |
+| **Isolation** | Tính độc lập | Các transactions không ảnh hưởng lẫn nhau |
+| **Durability** | Tính bền vững | Dữ liệu đã commit được lưu vĩnh viễn |
+
+**b) MySQL là gì?**
+
+**MySQL** là hệ quản trị cơ sở dữ liệu quan hệ mã nguồn mở phổ biến nhất thế giới, được phát triển bởi Oracle Corporation. MySQL được sử dụng bởi nhiều công ty lớn như Facebook, Twitter, YouTube, Netflix, và Uber.
+
+**c) Lý do chọn MySQL cho dự án:**
+
+| Tiêu chí | Giải thích |
+|----------|------------|
+| **Ổn định và đáng tin cậy** | Đã được kiểm chứng qua hàng triệu ứng dụng production |
+| **Hiệu năng cao** | Tối ưu cho read-heavy workloads |
+| **Miễn phí** | Community Edition miễn phí, phù hợp với dự án học tập |
+| **Tài liệu phong phú** | Documentation chi tiết, community lớn |
+| **Hỗ trợ tốt bởi Sequelize** | Full support cho tất cả features |
+| **Phù hợp với dữ liệu có cấu trúc** | Users, Jobs, Applications có schema rõ ràng |
+
+**d) Cấu hình database trong dự án:**
+
+| Cấu hình | Giá trị | Mục đích |
+|----------|---------|----------|
+| **Database name** | `smart_recruitment` | Tên database |
+| **Character set** | `utf8mb4` | Hỗ trợ Unicode đầy đủ (bao gồm emoji) |
+| **Collation** | `utf8mb4_0900_ai_ci` | Case-insensitive, accent-insensitive |
+| **Storage Engine** | InnoDB | Hỗ trợ transactions, foreign keys |
+| **Port** | 3306 | Port mặc định của MySQL |
+
+**e) Mối quan hệ giữa các bảng:**
+
+```
+┌─────────────────┐       ┌─────────────────┐
+│     users       │       │      jobs       │
+├─────────────────┤       ├─────────────────┤
+│ id (PK)         │       │ id (PK)         │
+│ email           │       │ recruiter_id (FK)────┐
+│ password        │       │ job_title       │    │
+│ full_name       │       │ description     │    │
+│ role            │◄──────│                 │    │
+│ ...             │  1:N  │ ...             │    │
+└────────┬────────┘       └─────────────────┘    │
+         │                                       │
+         │ 1:N                                   │
+         │                                       │
+┌────────▼────────┐       ┌─────────────────┐    │
+│    resumes      │       │  applications   │    │
+├─────────────────┤       ├─────────────────┤    │
+│ id (PK)         │       │ id (PK)         │    │
+│ user_id (FK)────┼──────►│ candidate_id (FK)    │
+│ title           │       │ job_id (FK)─────┼────┘
+│ file_path       │       │ resume_id (FK)──┘
+│ ...             │       │ status          │
+└─────────────────┘       │ ...             │
+                          └─────────────────┘
+```
 
 ### 2.6. Bảo mật
 
 #### 2.6.1. JWT (JSON Web Token)
 
-**JWT** được sử dụng cho authentication và authorization.
+**a) JWT là gì?**
 
-**Cấu trúc JWT:**
+**JWT (JSON Web Token)** là một tiêu chuẩn mở (RFC 7519) định nghĩa cách truyền thông tin một cách an toàn giữa các bên dưới dạng JSON object. Thông tin này có thể được xác minh và tin cậy vì nó được ký điện tử (digitally signed).
+
+JWT được sử dụng phổ biến cho:
+- **Authentication:** Sau khi đăng nhập, mỗi request tiếp theo sẽ bao gồm JWT
+- **Information Exchange:** Trao đổi thông tin an toàn giữa các parties
+
+**b) Cấu trúc của JWT:**
+
+JWT gồm 3 phần, phân tách bởi dấu chấm (.):
+
 ```
-header.payload.signature
+xxxxx.yyyyy.zzzzz
+  │      │      │
+  │      │      └─── Signature (Chữ ký)
+  │      └────────── Payload (Dữ liệu)
+  └───────────────── Header (Tiêu đề)
 ```
 
-**Payload chứa:**
-```javascript
-{
-  userId: 123,
-  role: "candidate",
-  iat: 1234567890,
-  exp: 1234567890
-}
-```
+**Chi tiết từng phần:**
 
-**Luồng xác thực:**
+| Phần | Nội dung | Ví dụ |
+|------|----------|-------|
+| **Header** | Loại token và thuật toán mã hóa | `{"alg": "HS256", "typ": "JWT"}` |
+| **Payload** | Dữ liệu claims (userId, role, exp...) | `{"userId": 123, "role": "candidate", "exp": 1234567890}` |
+| **Signature** | Chữ ký xác minh tính toàn vẹn | HMACSHA256(base64(header) + "." + base64(payload), secret) |
+
+**c) Luồng xác thực JWT trong hệ thống:**
 
 ```
 ┌─────────────┐                           ┌─────────────┐
@@ -700,38 +1108,118 @@ header.payload.signature
        │  {email, password}                     │
        │ ─────────────────────────────────────► │
        │                                         │
-       │  2. Validate credentials                │
-       │     Generate JWT                        │
+       │                    2. Validate credentials
+       │                       Query database    │
+       │                       Compare password hash
        │                                         │
-       │  3. Response: {token, user}            │
+       │                    3. Generate JWT      │
+       │                       Sign with secret  │
+       │                                         │
+       │  4. Response: {token, user}            │
        │ ◄───────────────────────────────────── │
        │                                         │
-       │  4. Store token in localStorage        │
+       │  5. Store token                         │
+       │     (localStorage/memory)               │
        │                                         │
-       │  5. GET /api/protected                 │
-       │  Authorization: Bearer <token>         │
+       │  6. GET /api/protected                 │
+       │  Header: Authorization: Bearer <token> │
        │ ─────────────────────────────────────► │
        │                                         │
-       │  6. Verify token                        │
-       │     Process request                     │
+       │                    7. Verify token      │
+       │                       Check signature   │
+       │                       Check expiration  │
+       │                       Extract userId    │
        │                                         │
-       │  7. Response: {data}                   │
+       │                    8. Process request   │
+       │                       Return data       │
+       │                                         │
+       │  9. Response: {data}                   │
        │ ◄───────────────────────────────────── │
        │                                         │
 ```
+
+**d) Ưu điểm của JWT:**
+
+| Ưu điểm | Giải thích |
+|---------|------------|
+| **Stateless** | Server không cần lưu session, dễ scale |
+| **Self-contained** | Chứa đủ thông tin cần thiết trong token |
+| **Cross-domain** | Hoạt động tốt với CORS |
+| **Compact** | Kích thước nhỏ, truyền qua URL, header dễ dàng |
+| **Secure** | Chữ ký đảm bảo token không bị tamper |
 
 > **Source:** [backend/src/utils/jwt.util.js](../smart-recruitment-platform/backend/src/utils/jwt.util.js)
 
 #### 2.6.2. Bcrypt Password Hashing
 
-**Bcrypt** được sử dụng để hash mật khẩu với salt.
+**a) Tại sao không lưu mật khẩu dạng plain text?**
+
+Lưu mật khẩu dạng plain text là một trong những sai lầm bảo mật nghiêm trọng nhất:
+- Nếu database bị leak, attacker có ngay mật khẩu của tất cả users
+- Users thường dùng chung mật khẩu cho nhiều trang web
+- Vi phạm quy định bảo mật (GDPR, PCI-DSS, ...)
+
+**b) Bcrypt là gì?**
+
+**Bcrypt** là một hàm hash mật khẩu được thiết kế đặc biệt cho việc lưu trữ mật khẩu an toàn. Bcrypt được tạo ra năm 1999 và vẫn được coi là một trong những phương pháp hash password tốt nhất.
+
+**c) Cách Bcrypt hoạt động:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    BCRYPT HASHING PROCESS                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│   Input: "mypassword123"                                         │
+│                                                                  │
+│   Step 1: Generate random salt                                   │
+│   ┌─────────────────────────────────────┐                       │
+│   │ Salt: $2b$10$N9qo8uLOickgx2ZMRZoMye │                       │
+│   └─────────────────────────────────────┘                       │
+│           │                                                      │
+│           │  Cost factor = 10                                    │
+│           │  (2^10 = 1024 iterations)                           │
+│           ▼                                                      │
+│   Step 2: Hash password with salt                                │
+│   ┌─────────────────────────────────────────────────────────┐   │
+│   │ password + salt ──► Blowfish cipher ──► 24-byte hash    │   │
+│   │                    (1024 iterations)                     │   │
+│   └─────────────────────────────────────────────────────────┘   │
+│           │                                                      │
+│           ▼                                                      │
+│   Step 3: Combine into final hash                               │
+│   ┌─────────────────────────────────────────────────────────┐   │
+│   │ $2b$10$N9qo8uLOickgx2ZMRZoMye.IjqKBbWvKJEr4ZosBVp5q6F.y │   │
+│   │  │  │   └─────────────────────┘└────────────────────────┘   │
+│   │  │  │          Salt (22 chars)        Hash (31 chars)       │
+│   │  │  └─ Cost factor (10)                                     │
+│   │  └──── Version (2b)                                         │
+│   └──────── Prefix ($)                                          │
+│   └─────────────────────────────────────────────────────────┘   │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**d) Tại sao Bcrypt an toàn?**
+
+| Đặc điểm | Giải thích |
+|----------|------------|
+| **Salt** | Mỗi password có salt riêng, hash giống nhau cho password khác nhau |
+| **Adaptive** | Cost factor có thể tăng theo thời gian để chống brute force |
+| **Slow by design** | Chậm có chủ đích, khiến brute force attack tốn kém |
+| **Built-in salt storage** | Salt được lưu trong hash, không cần column riêng |
+
+**e) Implementation trong dự án:**
 
 ```javascript
+// Hash password trước khi lưu
 const hashPassword = async (password) => {
-  const salt = await bcrypt.genSalt(10);
+  const saltRounds = 10;  // Cost factor
+  const salt = await bcrypt.genSalt(saltRounds);
   return await bcrypt.hash(password, salt);
 };
 
+// So sánh password khi đăng nhập
 const comparePassword = async (password, hashedPassword) => {
   return await bcrypt.compare(password, hashedPassword);
 };
@@ -741,7 +1229,19 @@ const comparePassword = async (password, hashedPassword) => {
 
 #### 2.6.3. Input Validation
 
-**Express-validator** được sử dụng để validate input.
+**a) Tại sao cần Input Validation?**
+
+Input Validation là tuyến phòng thủ đầu tiên chống lại các cuộc tấn công:
+
+| Loại tấn công | Mô tả | Phòng chống |
+|---------------|-------|-------------|
+| **SQL Injection** | Chèn SQL độc hại | Validate + ORM parameterized queries |
+| **XSS** | Chèn script độc hại | Sanitize + escape output |
+| **Invalid Data** | Dữ liệu không hợp lệ | Type checking + format validation |
+
+**b) Express-validator:**
+
+**Express-validator** là middleware validation phổ biến nhất cho Express.js, cung cấp:
 
 ```javascript
 const registerValidator = [
@@ -1671,66 +2171,338 @@ submitted → pending → reviewing → shortlisted → interviewed → offered/
 
 ### 4.3. Kết quả đạt được
 
-#### 4.3.1. Giao diện Trang chủ
+#### 4.3.1. Giao diện Trang chủ (HomePage)
 
-- Hiển thị featured jobs
-- Quick search functionality
-- Responsive design
+Trang chủ là điểm truy cập đầu tiên của hệ thống, được thiết kế để tạo ấn tượng tốt với người dùng và cung cấp các chức năng tìm kiếm nhanh.
 
-#### 4.3.2. Giao diện Ứng viên
+**Các thành phần chính:**
+- **Hero Section:** Banner giới thiệu với slogan và nút hành động
+- **Quick Search Bar:** Thanh tìm kiếm nhanh cho phép tìm việc theo từ khóa và địa điểm
+- **Featured Jobs:** Danh sách các công việc nổi bật, mới nhất
+- **Job Categories:** Phân loại việc làm theo ngành nghề
+- **Footer:** Thông tin liên hệ và links
 
-**Dashboard:**
-- Thống kê số đơn ứng tuyển
-- Danh sách CV
-- Jobs đề xuất
+**[Hình 4.1. Giao diện Trang chủ - Hero Section và Quick Search]**
+*Chú thích: Trang chủ hiển thị banner chính với thanh tìm kiếm nhanh cho phép người dùng tìm việc làm theo từ khóa và địa điểm*
 
-**Tìm kiếm việc làm:**
-- Search bar
-- Multiple filters (location, type, level, category)
-- Pagination
-- Job cards với thông tin tóm tắt
+**[Hình 4.2. Giao diện Trang chủ - Featured Jobs]**
+*Chú thích: Phần hiển thị các công việc nổi bật với thông tin tóm tắt bao gồm tiêu đề, công ty, địa điểm và mức lương*
 
-**Chi tiết việc làm:**
-- Thông tin đầy đủ về job
-- Company information
-- Apply button
-- Related jobs
+---
 
-#### 4.3.3. Giao diện Nhà tuyển dụng
+#### 4.3.2. Giao diện Xác thực (Authentication)
 
-**Dashboard:**
-- Số jobs đang active
-- Số applications nhận được
-- Quick stats
+**Trang Đăng nhập (Login):**
 
-**Quản lý Jobs:**
-- Danh sách jobs với status
-- Create/Edit job form
-- Toggle status (open/closed)
-- Delete job
+- Form đăng nhập với email và password
+- Validation realtime (email format, password length)
+- Remember me option
+- Link đến trang đăng ký
+- Hiển thị lỗi khi thông tin không chính xác
 
-**Xem Applications:**
-- Danh sách ứng viên theo job
-- View resume
-- Update status
-- Add notes
+**[Hình 4.3. Giao diện Trang Đăng nhập]**
+*Chú thích: Form đăng nhập với các trường email và mật khẩu, kèm theo validation và link chuyển hướng đến trang đăng ký*
 
-#### 4.3.4. Giao diện Admin
+**Trang Đăng ký (Register):**
 
-**Dashboard:**
-- Tổng số users, jobs, applications
-- Growth charts
-- Recent activities
+- Form đăng ký với đầy đủ thông tin
+- Chọn loại tài khoản: Ứng viên hoặc Nhà tuyển dụng
+- Validation cho tất cả các trường
+- Hiển thị strength indicator cho password
+- Xác nhận mật khẩu
 
-**Quản lý Users:**
-- DataGrid với search, filter
-- Toggle active status
-- Change role
-- Delete user
+**[Hình 4.4. Giao diện Trang Đăng ký - Ứng viên]**
+*Chú thích: Form đăng ký dành cho ứng viên với các trường họ tên, email, mật khẩu và số điện thoại*
 
-**Quản lý Jobs/Applications:**
-- Overview tất cả dữ liệu
-- Moderation capabilities
+**[Hình 4.5. Giao diện Trang Đăng ký - Nhà tuyển dụng]**
+*Chú thích: Form đăng ký dành cho nhà tuyển dụng với thêm trường tên công ty*
+
+---
+
+#### 4.3.3. Giao diện Ứng viên (Candidate)
+
+**A. Dashboard Ứng viên:**
+
+Trang tổng quan hiển thị các thông tin quan trọng nhất của ứng viên:
+
+- **Thống kê nhanh:** 
+  - Số đơn ứng tuyển đã nộp
+  - Số CV đã tải lên
+  - Số lượt xem profile (nếu có)
+- **Đơn ứng tuyển gần đây:** Danh sách 5 đơn mới nhất với trạng thái
+- **Việc làm đề xuất:** Gợi ý việc làm phù hợp với hồ sơ
+- **Quick Actions:** Các nút tắt đến chức năng thường dùng
+
+**[Hình 4.6. Dashboard Ứng viên - Tổng quan]**
+*Chú thích: Trang dashboard của ứng viên hiển thị thống kê tổng quan, đơn ứng tuyển gần đây và việc làm đề xuất*
+
+**B. Trang Tìm kiếm Việc làm:**
+
+Trang tìm kiếm với bộ lọc đa dạng:
+
+- **Search Bar:** Tìm kiếm theo từ khóa (job title, skills, company)
+- **Filters Panel:**
+  - Địa điểm (thành phố/tỉnh)
+  - Loại công việc (Full-time, Part-time, Remote, Contract)
+  - Cấp bậc (Intern, Junior, Middle, Senior, Manager)
+  - Ngành nghề (IT, Finance, Marketing, ...)
+  - Mức lương (Range slider)
+- **Sort Options:** Sắp xếp theo ngày đăng, mức lương, độ phù hợp
+- **Job Cards:** Hiển thị danh sách việc làm với thông tin tóm tắt
+- **Pagination:** Phân trang kết quả
+
+**[Hình 4.7. Trang Tìm kiếm Việc làm - Giao diện chính]**
+*Chú thích: Giao diện tìm kiếm việc làm với thanh search, bộ lọc bên trái và danh sách kết quả bên phải*
+
+**[Hình 4.8. Trang Tìm kiếm Việc làm - Bộ lọc mở rộng]**
+*Chú thích: Panel bộ lọc với các tùy chọn lọc theo địa điểm, loại công việc, cấp bậc và mức lương*
+
+**C. Trang Chi tiết Việc làm:**
+
+Hiển thị đầy đủ thông tin về một công việc:
+
+- **Header:** Job title, company name, location, job type badges
+- **Company Info:** Logo, tên, mô tả ngắn về công ty
+- **Job Details:**
+  - Mô tả công việc chi tiết
+  - Yêu cầu ứng viên
+  - Quyền lợi được hưởng
+  - Kỹ năng yêu cầu (tags)
+  - Mức lương
+  - Deadline ứng tuyển
+- **Apply Section:** Nút Apply Now, chọn CV để nộp
+- **Related Jobs:** Gợi ý việc làm tương tự
+
+**[Hình 4.9. Trang Chi tiết Việc làm - Phần trên]**
+*Chú thích: Phần header của trang chi tiết việc làm với thông tin công ty và các badge (job type, location)*
+
+**[Hình 4.10. Trang Chi tiết Việc làm - Mô tả và Yêu cầu]**
+*Chú thích: Phần mô tả công việc chi tiết và danh sách yêu cầu ứng viên*
+
+**[Hình 4.11. Trang Chi tiết Việc làm - Modal Ứng tuyển]**
+*Chú thích: Dialog cho phép ứng viên chọn CV và nhập cover letter trước khi nộp đơn*
+
+**D. Trang Quản lý CV:**
+
+Cho phép ứng viên quản lý các CV đã tải lên:
+
+- **Upload Section:** Khu vực drag & drop hoặc click để upload CV (PDF)
+- **CV List:** 
+  - Danh sách CV với tên file, ngày upload
+  - Badge "Primary" cho CV chính
+  - Actions: View, Set as Primary, Delete
+- **Preview:** Modal preview CV trước khi apply
+
+**[Hình 4.12. Trang Quản lý CV]**
+*Chú thích: Giao diện quản lý CV với khu vực upload và danh sách các CV đã tải lên*
+
+**E. Trang Đơn ứng tuyển của tôi:**
+
+Theo dõi trạng thái các đơn ứng tuyển:
+
+- **Stats Overview:** Tổng số đơn, số đang chờ, số được phỏng vấn
+- **Applications Table:**
+  - Tên công việc và công ty
+  - Ngày nộp đơn
+  - Trạng thái (color-coded badges)
+  - Actions: View details, Withdraw
+- **Status Legend:** Giải thích các trạng thái
+
+**[Hình 4.13. Trang Đơn ứng tuyển của tôi]**
+*Chú thích: Danh sách các đơn ứng tuyển với trạng thái hiển thị bằng các badge màu khác nhau*
+
+---
+
+#### 4.3.4. Giao diện Nhà tuyển dụng (Recruiter)
+
+**A. Dashboard Nhà tuyển dụng:**
+
+Tổng quan hoạt động tuyển dụng:
+
+- **Statistics Cards:**
+  - Tổng số tin tuyển dụng
+  - Số tin đang active
+  - Tổng đơn ứng tuyển nhận được
+  - Đơn ứng tuyển mới (7 ngày)
+- **Recent Applications:** Danh sách ứng viên mới nộp đơn
+- **Jobs Performance:** Biểu đồ hiệu quả các tin tuyển dụng
+- **Quick Actions:** Tạo tin mới, xem tất cả đơn
+
+**[Hình 4.14. Dashboard Nhà tuyển dụng]**
+*Chú thích: Trang tổng quan của nhà tuyển dụng với các thống kê, danh sách ứng viên mới và biểu đồ*
+
+**B. Trang Quản lý Tin tuyển dụng:**
+
+Quản lý toàn bộ tin tuyển dụng:
+
+- **Action Bar:** Nút "Tạo tin mới", Search, Filter by status
+- **Jobs DataGrid:**
+  - Title, Status (badge), Applications count
+  - Created date, Deadline
+  - Actions: Edit, Toggle status, Delete
+- **Create/Edit Job Form:**
+  - Thông tin cơ bản (title, category, type)
+  - Địa điểm và mức lương
+  - Mô tả công việc (rich text editor)
+  - Yêu cầu ứng viên
+  - Kỹ năng (tags input)
+  - Deadline và status
+
+**[Hình 4.15. Trang Quản lý Tin tuyển dụng - Danh sách]**
+*Chú thích: Bảng danh sách các tin tuyển dụng với trạng thái, số lượng ứng viên và các actions*
+
+**[Hình 4.16. Form Tạo/Sửa Tin tuyển dụng]**
+*Chú thích: Form tạo tin tuyển dụng mới với các trường thông tin chi tiết*
+
+**C. Trang Xem Đơn ứng tuyển:**
+
+Quản lý ứng viên theo từng tin tuyển dụng:
+
+- **Job Selector:** Dropdown chọn tin tuyển dụng
+- **Applications Table:**
+  - Thông tin ứng viên (name, email, phone)
+  - CV link (click to preview/download)
+  - Ngày nộp, Cover letter
+  - Status với dropdown để cập nhật
+- **Status Flow:** Visualize quy trình review
+- **Bulk Actions:** Cập nhật status nhiều đơn cùng lúc
+
+**[Hình 4.17. Trang Xem Đơn ứng tuyển theo Job]**
+*Chú thích: Danh sách ứng viên đã nộp đơn cho một tin tuyển dụng cụ thể với khả năng cập nhật trạng thái*
+
+**[Hình 4.18. Preview CV của Ứng viên]**
+*Chú thích: Modal hiển thị preview CV của ứng viên để recruiter xem xét*
+
+---
+
+#### 4.3.5. Giao diện Quản trị viên (Admin)
+
+**A. Dashboard Admin:**
+
+Tổng quan toàn hệ thống:
+
+- **System Stats Cards:**
+  - Tổng số users (breakdown by role)
+  - Tổng số jobs (active vs closed)
+  - Tổng số applications
+  - Tổng số resumes
+- **Growth Charts:** 
+  - Biểu đồ tăng trưởng users theo thời gian
+  - Biểu đồ số lượng jobs/applications theo tháng
+- **Recent Activities:** Log hoạt động gần đây trên hệ thống
+- **System Health:** Các metrics về hệ thống (nếu có)
+
+**[Hình 4.19. Dashboard Admin - Tổng quan]**
+*Chú thích: Trang dashboard của admin với các thống kê tổng quan về users, jobs, applications*
+
+**[Hình 4.20. Dashboard Admin - Biểu đồ tăng trưởng]**
+*Chú thích: Biểu đồ thống kê sự tăng trưởng của hệ thống theo thời gian*
+
+**B. Trang Quản lý Users:**
+
+Quản lý toàn bộ tài khoản người dùng:
+
+- **Search & Filter:**
+  - Tìm kiếm theo email, tên
+  - Lọc theo role (candidate, recruiter, admin)
+  - Lọc theo trạng thái (active/inactive)
+- **Users DataGrid:**
+  - Avatar, Full name, Email
+  - Role (with badge)
+  - Status (active/inactive toggle)
+  - Created date
+  - Actions: Edit role, Toggle status, Delete
+- **Confirmation Dialogs:** Xác nhận trước các actions quan trọng
+
+**[Hình 4.21. Trang Quản lý Users]**
+*Chú thích: Bảng danh sách tất cả users trong hệ thống với các chức năng quản lý*
+
+**[Hình 4.22. Dialog Xác nhận Xóa User]**
+*Chú thích: Dialog xác nhận khi admin thực hiện xóa một user*
+
+**C. Trang Quản lý Jobs:**
+
+Quản lý toàn bộ tin tuyển dụng trên hệ thống:
+
+- **Overview:** Tổng số jobs, breakdown by status
+- **Jobs DataGrid:**
+  - Job title, Recruiter info
+  - Category, Location
+  - Status, Applications count
+  - Created date
+  - Actions: View, Toggle status, Delete
+- **Moderation:** Có thể ẩn/xóa các tin vi phạm
+
+**[Hình 4.23. Trang Quản lý Jobs - Admin]**
+*Chú thích: Danh sách tất cả tin tuyển dụng trong hệ thống với khả năng moderation*
+
+**D. Trang Quản lý Applications:**
+
+Xem tổng quan tất cả đơn ứng tuyển:
+
+- **Stats:** Breakdown by status
+- **Applications DataGrid:**
+  - Candidate info, Job info
+  - Status, Applied date
+  - Actions: View details
+
+**[Hình 4.24. Trang Quản lý Applications - Admin]**
+*Chú thích: Danh sách tất cả đơn ứng tuyển trong hệ thống*
+
+**E. Trang Quản lý Resumes:**
+
+Xem tổng quan tất cả CV:
+
+- **Stats:** Tổng số CV, breakdown by user
+- **Resumes DataGrid:**
+  - Owner info, Title
+  - File name, Upload date
+  - Primary status
+  - Actions: View, Download
+
+**[Hình 4.25. Trang Quản lý Resumes - Admin]**
+*Chú thích: Danh sách tất cả CV đã được upload trong hệ thống*
+
+---
+
+#### 4.3.6. Giao diện chung
+
+**Navigation Bar:**
+
+- Logo và tên ứng dụng
+- Menu items tùy theo role
+- User menu (profile, settings, logout)
+- Responsive: collapse thành hamburger menu trên mobile
+
+**[Hình 4.26. Navigation Bar - Desktop view]**
+*Chú thích: Thanh navigation trên desktop với đầy đủ menu items*
+
+**[Hình 4.27. Navigation Bar - Mobile view với Drawer]**
+*Chú thích: Menu navigation trên mobile với drawer slide-in*
+
+**Settings Page:**
+
+- Thông tin cá nhân (avatar, name, email)
+- Đổi mật khẩu
+- Cài đặt thông báo (nếu có)
+
+**[Hình 4.28. Trang Cài đặt - Thông tin cá nhân]**
+*Chú thích: Form chỉnh sửa thông tin cá nhân của người dùng*
+
+---
+
+#### 4.3.7. Responsive Design
+
+Hệ thống được thiết kế responsive, hoạt động tốt trên mọi kích thước màn hình:
+
+| Breakpoint | Width | Layout |
+|------------|-------|--------|
+| **Mobile** | < 600px | Single column, stacked elements |
+| **Tablet** | 600px - 960px | 2 columns, condensed navigation |
+| **Desktop** | > 960px | Full layout with sidebar |
+
+**[Hình 4.29. So sánh giao diện Responsive - Mobile vs Desktop]**
+*Chú thích: So sánh layout của trang tìm kiếm việc làm trên mobile và desktop*
 
 ### 4.4. Kiểm thử
 
@@ -1788,42 +2560,86 @@ Tất cả endpoints đã được test manual qua:
 
 ### 1. Kết luận
 
-#### Kết quả đạt được
+#### 1.1. Kết quả đạt được
 
-Đồ án đã hoàn thành xây dựng **Hệ thống Tuyển dụng Thông minh (Smart Recruitment Platform)** với các tính năng chính:
+Sau quá trình nghiên cứu, phân tích, thiết kế và triển khai, đồ án đã hoàn thành xây dựng **Hệ thống Tuyển dụng Thông minh (Smart Recruitment Platform)** - một nền tảng web hoàn chỉnh phục vụ cho việc kết nối giữa nhà tuyển dụng và ứng viên.
 
-✅ **Hoàn thành:**
-- Xây dựng RESTful API hoàn chỉnh với Node.js/Express
-- Phát triển SPA với React/TypeScript và Material-UI
-- Thiết kế database MySQL với đầy đủ relationships
-- Triển khai authentication/authorization với JWT
-- Phân quyền 3 roles: Candidate, Recruiter, Admin
-- Quản lý jobs, resumes, applications
-- API documentation với Swagger
-- Unit tests và integration tests
+**Về mặt chức năng:**
 
-✅ **Chất lượng:**
-- Code có cấu trúc rõ ràng, dễ maintain
-- Responsive design
-- Input validation và error handling
+| Module | Chức năng | Mức độ hoàn thành |
+|--------|-----------|-------------------|
+| **Authentication** | Đăng ký, đăng nhập, JWT, phân quyền | ✅ Hoàn thành 100% |
+| **User Management** | Quản lý profile, avatar, đổi mật khẩu | ✅ Hoàn thành 100% |
+| **Job Management** | CRUD jobs, search, filter, pagination | ✅ Hoàn thành 100% |
+| **Resume Management** | Upload CV (PDF), quản lý nhiều CV | ✅ Hoàn thành 100% |
+| **Application Management** | Ứng tuyển, theo dõi trạng thái, withdraw | ✅ Hoàn thành 100% |
+| **Admin Dashboard** | Quản lý users, jobs, statistics | ✅ Hoàn thành 100% |
+| **API Documentation** | Swagger UI tự động | ✅ Hoàn thành 100% |
+
+**Về mặt kỹ thuật:**
+
+✅ **Backend:**
+- RESTful API hoàn chỉnh với 30+ endpoints
+- Authentication/Authorization với JWT và role-based access control
+- Input validation với express-validator
+- Error handling tập trung
 - Logging với Winston
+- Unit tests và Integration tests
 
-#### Kiến thức và kỹ năng đạt được
+✅ **Frontend:**
+- Single Page Application với React 19 và TypeScript
+- Responsive design với Material-UI
+- State management với Context API
+- Client-side routing với React Router v7
+- Lazy loading và code splitting để tối ưu performance
 
-Qua quá trình thực hiện đồ án, sinh viên đã:
-- Nắm vững kiến trúc 3-tier và RESTful API design
-- Thành thạo Node.js, Express.js, Sequelize ORM
-- Làm việc với React, TypeScript, Material-UI
-- Hiểu về security: JWT, bcrypt, input validation
-- Sử dụng Git cho version control
-- Viết documentation và testing
+✅ **Database:**
+- Schema được thiết kế chuẩn hóa với 4 bảng chính
+- Relationships (1-N) được xử lý đúng với foreign keys
+- Indexes cho các trường thường xuyên query
+
+✅ **Security:**
+- Password hashing với bcrypt (cost factor 10)
+- JWT với expiration time
+- Input sanitization
+- CORS configuration
+- HTTP-only considerations
+
+#### 1.2. Kiến thức và kỹ năng đạt được
+
+Qua quá trình thực hiện đồ án, sinh viên đã tích lũy được nhiều kiến thức và kỹ năng quan trọng:
+
+**Kiến thức lý thuyết:**
+- Hiểu rõ kiến trúc Client-Server và RESTful API design principles
+- Nắm vững các pattern như MVC, Service Layer, Repository Pattern
+- Hiểu về authentication flows và security best practices
+- Kiến thức về database design và normalization
+
+**Kỹ năng thực hành:**
+- Thành thạo Node.js, Express.js, và Sequelize ORM
+- Làm việc với React, TypeScript, và Material-UI
+- Sử dụng Git cho version control và collaboration
+- Viết documentation và unit/integration tests
+- Debug và troubleshoot các vấn đề kỹ thuật
+
+**Soft skills:**
+- Kỹ năng phân tích và thiết kế hệ thống
+- Quản lý thời gian và timeline dự án
+- Tự học và nghiên cứu công nghệ mới
+- Viết báo cáo và trình bày kỹ thuật
 
 ### 2. Hạn chế
 
-- Chưa có tính năng real-time notifications (WebSocket)
-- Chưa tích hợp email service
-- Chưa có AI matching/recommendation
-- Chưa có mobile app
+Mặc dù đã hoàn thành các chức năng cơ bản, hệ thống vẫn còn một số hạn chế:
+
+| Hạn chế | Mô tả | Mức độ ảnh hưởng |
+|---------|-------|------------------|
+| **Real-time notifications** | Chưa có WebSocket cho thông báo realtime | Trung bình |
+| **Email service** | Chưa tích hợp gửi email xác nhận, thông báo | Trung bình |
+| **AI/ML features** | Chưa có job-candidate matching tự động | Thấp |
+| **Mobile app** | Chưa có native mobile app (iOS/Android) | Thấp |
+| **Advanced search** | Chưa có full-text search với Elasticsearch | Thấp |
+| **Analytics** | Dashboard analytics còn đơn giản | Thấp |
 
 ### 3. Hướng phát triển
 
