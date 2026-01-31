@@ -2548,108 +2548,7 @@ classDiagram
     ApplicationService ..> ApiClient : uses
 ```
 
-// User → Applications (1-N): Candidate nộp nhiều đơn
-User.hasMany(Application, { foreignKey: "user_id", as: "applications" });
-Application.belongsTo(User, { foreignKey: "user_id", as: "candidate" });
-
-// Job → Applications (1-N): Job nhận nhiều đơn
-Job.hasMany(Application, { foreignKey: "job_id", as: "applications" });
-Application.belongsTo(Job, { foreignKey: "job_id", as: "job" });
-
-// Resume → Applications (1-N): Resume được dùng trong nhiều đơn
-Resume.hasMany(Application, { foreignKey: "resume_id", as: "applications" });
-Application.belongsTo(Resume, { foreignKey: "resume_id", as: "resume" });
-```
-
-> **Source:** [backend/src/models/index.js](../smart-recruitment-platform/backend/src/models/index.js#L1-L42)
-
-#### 3.3.4. Class Diagram
-
-```mermaid
-classDiagram
-    class User {
-        +int id
-        +string email
-        +string password
-        +string full_name
-        +enum role
-        +string phone
-        +string company
-        +string avatar
-        +boolean is_active
-        +datetime created_at
-        +datetime updated_at
-        +hasMany() jobs
-        +hasMany() resumes
-        +hasMany() applications
-    }
-    
-    class Job {
-        +int id
-        +int user_id
-        +string job_title
-        +enum job_type
-        +enum position_level
-        +string city
-        +string experience
-        +text skills
-        +string job_fields
-        +string category
-        +text description
-        +text requirements
-        +text benefits
-        +decimal salary_min
-        +decimal salary_max
-        +enum unit
-        +enum status
-        +datetime deadline
-        +datetime created_at
-        +datetime updated_at
-        +belongsTo() recruiter
-        +hasMany() applications
-    }
-    
-    class Resume {
-        +int id
-        +int user_id
-        +string file_name
-        +string file_path
-        +int file_size
-        +string category
-        +text resume_text
-        +boolean is_primary
-        +enum status
-        +datetime created_at
-        +datetime updated_at
-        +belongsTo() candidate
-        +hasMany() applications
-    }
-    
-    class Application {
-        +int id
-        +int job_id
-        +int user_id
-        +int resume_id
-        +text cover_letter
-        +enum status
-        +datetime applied_at
-        +datetime reviewed_at
-        +text notes
-        +datetime created_at
-        +datetime updated_at
-        +belongsTo() job
-        +belongsTo() candidate
-        +belongsTo() resume
-    }
-    
-    User "1" --> "*" Job : creates
-    User "1" --> "*" Resume : owns
-    User "1" --> "*" Application : submits
-    Job "1" --> "*" Application : receives
-    Resume "1" --> "*" Application : attached_to
-```
-
-### 3.4. Thiết kế API
+### 3.5. Thiết kế API
 
 #### 3.4.1. Tổng quan API Endpoints
 
@@ -2805,7 +2704,7 @@ const swaggerOptions = {
 
 > **Source:** [backend/src/config/swagger.js](../smart-recruitment-platform/backend/src/config/swagger.js#L1-L40)
 
-### 3.5. Thiết kế giao diện
+### 3.6. Thiết kế giao diện
 
 #### 3.5.1. Cấu trúc Pages
 
