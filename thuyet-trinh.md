@@ -47,14 +47,14 @@ Sau đó, khi chuyển giữa các màn hình, nội dung được cập nhật 
 Toàn bộ code giao diện được viết bằng **TypeScript** — phiên bản nâng cấp của JavaScript — có tính năng kiểm tra kiểu dữ liệu ngay khi lập trình, giúp phát hiện lỗi sớm trước khi chạy chương trình.
 
 **Phần máy chủ xử lý** — hay Backend — là bộ não của hệ thống, chạy trên máy chủ, nhận yêu cầu từ giao diện, xử lý logic nghiệp vụ và trả về kết quả.
-Nhóm em dùng **Node.js** — môi trường chạy JavaScript phía máy chủ — kết hợp với **Express.js** là một framework giúp xây dựng các đường dẫn API nhanh chóng và gọn nhẹ.
+Nhóm em dùng **Node.js** — môi trường chạy JavaScript phía máy chủ — kết hợp với **Express.js** là một framework, tức là một bộ khung lập trình có sẵn, giúp xây dựng các đường dẫn API nhanh chóng và gọn nhẹ mà không phải viết lại từ đầu.
 **[NHẤN MẠNH] Lý do chọn Node.js là vì nó xử lý đồng thời nhiều yêu cầu mà không bị chặn — rất phù hợp cho ứng dụng có nhiều người dùng truy cập cùng lúc như hệ thống tuyển dụng.**
 
 Giao diện và máy chủ giao tiếp với nhau qua **REST API** — đây là một chuẩn giao tiếp phổ biến trên Internet, hoạt động theo mô hình yêu cầu và phản hồi: giao diện gửi một yêu cầu lên máy chủ, máy chủ xử lý rồi gửi lại kết quả dạng JSON — định dạng dữ liệu văn bản nhẹ và dễ đọc.
 
 **Cơ sở dữ liệu** được xây dựng trên **MySQL** — hệ quản trị cơ sở dữ liệu quan hệ mã nguồn mở, rất ổn định và phổ biến trong doanh nghiệp.
 Để làm việc với MySQL dễ hơn trong code, nhóm em dùng **Sequelize** — một thư viện ORM, viết tắt của Object-Relational Mapping.
-ORM hoạt động như một lớp trung gian: thay vì viết câu lệnh SQL thủ công, lập trình viên làm việc với các đối tượng trong code, và Sequelize tự động chuyển thành câu SQL tương ứng — vừa giảm lỗi, vừa dễ bảo trì.
+ORM hoạt động như một lớp trung gian: thay vì viết câu lệnh **SQL** — ngôn ngữ truy vấn dữ liệu truyền thống dùng để đọc, ghi, tìm kiếm trong cơ sở dữ liệu — thủ công, lập trình viên làm việc với các đối tượng trong code, và Sequelize tự động chuyển thành câu SQL tương ứng — vừa giảm lỗi, vừa dễ bảo trì.
 
 ---
 
@@ -108,14 +108,14 @@ Cách làm truyền thống nếu mỗi truy vấn mất 100 miligiây thì 8 tr
 **Tính năng thứ năm — Hệ thống xác thực và phân quyền bảo mật.**
 
 Luồng xác thực hoạt động như sau: khi người dùng đăng nhập thành công, máy chủ tạo ra một **JWT — JSON Web Token** — đây là một chuỗi ký tự mã hóa đóng vai trò như "thẻ thông hành kỹ thuật số", chứa thông tin về người dùng và hết hạn sau 7 ngày.
-Mỗi lần giao diện gửi yêu cầu lên máy chủ, thẻ này được đính kèm tự động trong header của yêu cầu.
+Mỗi lần giao diện gửi yêu cầu lên máy chủ, thẻ này được đính kèm tự động vào phần thông tin điều khiển của yêu cầu — tương tự như ghi tên trên phong bì trước khi gửi thư — để máy chủ biết yêu cầu đến từ ai.
 Máy chủ kiểm tra chữ ký của thẻ để xác nhận đây là token hợp lệ do hệ thống cấp — không phải do ai giả mạo.
 
 Về mật khẩu, nhóm em dùng thuật toán **bcrypt** để mã hóa một chiều — nghĩa là mật khẩu được băm thành một chuỗi ngẫu nhiên trước khi lưu vào cơ sở dữ liệu, và không thể giải mã ngược lại.
 Khi đăng nhập, hệ thống băm mật khẩu người dùng nhập vào rồi so sánh với chuỗi đã lưu — không bao giờ lưu mật khẩu gốc ở bất kỳ đâu.
 
 Về phân quyền, hệ thống chia ba vai trò độc lập: Ứng viên, Nhà tuyển dụng và Quản trị viên.
-Mỗi API endpoint đều có lớp kiểm tra vai trò trước khi xử lý yêu cầu.
+Mỗi **API endpoint** — tức là mỗi "cửa" chức năng mà giao diện gọi đến, ví dụ cửa đăng nhập, cửa tìm việc, cửa nộp đơn — đều có lớp kiểm tra vai trò trước khi xử lý yêu cầu.
 **[NHẤN MẠNH] Kết quả: ứng viên không thể truy cập trang quản trị, nhà tuyển dụng không thể xem hoặc sửa hồ sơ của ứng viên khác — quyền hạn được kiểm soát chặt chẽ ở từng thao tác.**
 
 ---
