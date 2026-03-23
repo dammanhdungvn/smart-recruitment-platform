@@ -41,7 +41,8 @@ Hệ thống theo mô hình **Client – Server**, nghĩa là có hai phần tá
 
 **Phần giao diện người dùng** — hay còn gọi là Frontend — là những trang web mà người dùng nhìn thấy và thao tác trực tiếp trên trình duyệt.
 Nhóm em xây dựng phần này bằng **React** — một thư viện JavaScript rất phổ biến hiện nay, do Facebook phát triển.
-React hoạt động theo cơ chế "ứng dụng một trang" — Single Page Application — nghĩa là khi người dùng chuyển trang, nội dung được tải động ngay trên trình duyệt mà không cần tải lại toàn bộ trang web, giúp trải nghiệm mượt mà hơn nhiều so với web truyền thống.
+React hoạt động theo cơ chế "ứng dụng một trang" — Single Page Application — nghĩa là chỉ tải trang một lần duy nhất khi người dùng mở ứng dụng.
+Sau đó, khi chuyển giữa các màn hình, nội dung được cập nhật động ngay trên trình duyệt mà không cần tải lại toàn bộ trang — giúp trải nghiệm mượt mà, nhanh hơn nhiều so với web truyền thống.
 Để giao diện đẹp và đồng nhất, nhóm em dùng thêm **Material-UI** — một bộ thư viện thiết kế sẵn các thành phần như nút bấm, bảng dữ liệu, hộp thoại — theo chuẩn Material Design của Google.
 Toàn bộ code giao diện được viết bằng **TypeScript** — phiên bản nâng cấp của JavaScript — có tính năng kiểm tra kiểu dữ liệu ngay khi lập trình, giúp phát hiện lỗi sớm trước khi chạy chương trình.
 
@@ -99,8 +100,8 @@ Nhà tuyển dụng cũng có thể ghi chú nội bộ cho từng ứng viên �
 Quản trị viên có một bảng điều khiển hiển thị toàn bộ trạng thái của hệ thống trong thời gian thực: tổng số người dùng phân theo vai trò, số tin tuyển dụng đang mở, số hồ sơ chờ duyệt, và số đơn ứng tuyển theo từng trạng thái.
 
 Về mặt kỹ thuật, để hiển thị 8 con số thống kê này, nhóm em sử dụng cơ chế **xử lý song song** — tức là máy chủ gửi 8 truy vấn đến cơ sở dữ liệu cùng một lúc thay vì chờ từng cái xong mới làm cái tiếp theo.
-Cách làm truyền thống nếu mỗi truy vấn mất 100 mili-giây thì 8 truy vấn tuần tự sẽ mất 800 mili-giây.
-**[NHẤN MẠNH] Với xử lý song song, tổng thời gian chỉ bằng thời gian của truy vấn lâu nhất — tức là vẫn chỉ khoảng 100 mili-giây — trang dashboard tải nhanh hơn gần 8 lần.**
+Cách làm truyền thống nếu mỗi truy vấn mất 100 miligiây thì 8 truy vấn tuần tự sẽ mất 800 miligiây.
+**[NHẤN MẠNH] Với xử lý song song, tổng thời gian chỉ bằng thời gian của truy vấn lâu nhất — tức là vẫn chỉ khoảng 100 miligiây — trang dashboard tải nhanh hơn gần 8 lần.**
 
 ---
 
