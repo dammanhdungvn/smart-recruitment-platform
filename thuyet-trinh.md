@@ -2,7 +2,7 @@
 
 ## ĐỀ TÀI: HỆ THỐNG TUYỂN DỤNG THÔNG MINH (SMART RECRUITMENT PLATFORM)
 
-> **Tổng thời gian đọc ước tính: 5–7 phút**  
+> **Tổng thời gian đọc ước tính: 6–7 phút**  
 > Các câu quan trọng được đánh dấu **[NHẤN MẠNH]**
 
 ---
@@ -13,7 +13,8 @@ Kính thưa quý thầy cô trong Hội đồng,
 
 Em xin phép được bắt đầu phần bảo vệ đồ án tốt nghiệp của mình.
 
-Đề tài mà em thực hiện có tên là: **"Hệ thống Tuyển dụng Thông minh" — hay còn gọi là Smart Recruitment Platform.**
+Đề tài mà nhóm em thực hiện có tên là: **"Hệ thống Tuyển dụng Thông minh" — hay còn gọi là Smart Recruitment Platform.**
+Đây là một ứng dụng web cho phép ứng viên tìm việc, nhà tuyển dụng đăng tin, và quản trị viên điều hành toàn bộ nền tảng — tất cả trên một hệ thống duy nhất, tập trung và tự động hóa.
 
 ---
 
@@ -21,122 +22,151 @@ Thưa quý thầy cô, hiện nay thị trường lao động Việt Nam đang p
 Mỗi năm có hàng triệu lượt tìm kiếm việc làm và hàng trăm nghìn tin tuyển dụng được đăng tải trên nhiều nền tảng khác nhau.
 
 Thế nhưng, hầu hết các quy trình tuyển dụng hiện tại vẫn còn rất thủ công.
-Nhà tuyển dụng phải xử lý hàng trăm hồ sơ bằng tay, không có công cụ quản lý tập trung.
-Còn ứng viên thì khó theo dõi được trạng thái đơn ứng tuyển của mình sau khi đã nộp.
+Nhà tuyển dụng nhận hồ sơ qua email, lưu trên máy tính cá nhân, không có công cụ quản lý tập trung.
+Còn ứng viên thì không biết đơn của mình đang ở đâu trong quy trình — phải chờ điện thoại hoặc email mà đôi khi không bao giờ đến.
 
-**[NHẤN MẠNH] Câu hỏi đặt ra là: Làm thế nào để tự động hóa quy trình tuyển dụng, giúp cả nhà tuyển dụng lẫn ứng viên tiết kiệm thời gian và làm việc hiệu quả hơn?**
+**[NHẤN MẠNH] Câu hỏi đặt ra là: Làm thế nào để tự động hóa quy trình tuyển dụng, giúp cả hai phía tiết kiệm thời gian và minh bạch hơn trong từng bước?**
 
-Đó chính là lý do nhóm em chọn xây dựng hệ thống này.
+Đó chính là lý do nhóm em xây dựng hệ thống này.
+
+---
+
+## [PHẦN 2 — KIẾN TRÚC HỆ THỐNG & TÍNH NĂNG CHÍNH] (~3 phút)
+
+### 2.1 — Kiến trúc tổng quan: hệ thống hoạt động như thế nào?
+
+Trước khi đi vào tính năng, em xin trình bày ngắn gọn cách hệ thống được xây dựng để quý thầy cô có bức tranh tổng thể.
+
+Hệ thống theo mô hình **Client – Server**, nghĩa là có hai phần tách biệt hoàn toàn:
+
+**Phần giao diện người dùng** — hay còn gọi là Frontend — là những trang web mà người dùng nhìn thấy và thao tác trực tiếp trên trình duyệt.
+Nhóm em xây dựng phần này bằng **React** — một thư viện JavaScript rất phổ biến hiện nay, do Facebook phát triển.
+React hoạt động theo cơ chế "ứng dụng một trang" — Single Page Application — nghĩa là khi người dùng chuyển trang, nội dung được tải động ngay trên trình duyệt mà không cần tải lại toàn bộ trang web, giúp trải nghiệm mượt mà hơn nhiều so với web truyền thống.
+Để giao diện đẹp và đồng nhất, nhóm em dùng thêm **Material-UI** — một bộ thư viện thiết kế sẵn các thành phần như nút bấm, bảng dữ liệu, hộp thoại — theo chuẩn Material Design của Google.
+Toàn bộ code giao diện được viết bằng **TypeScript** — phiên bản nâng cấp của JavaScript — có tính năng kiểm tra kiểu dữ liệu ngay khi lập trình, giúp phát hiện lỗi sớm trước khi chạy chương trình.
+
+**Phần máy chủ xử lý** — hay Backend — là bộ não của hệ thống, chạy trên máy chủ, nhận yêu cầu từ giao diện, xử lý logic nghiệp vụ và trả về kết quả.
+Nhóm em dùng **Node.js** — môi trường chạy JavaScript phía máy chủ — kết hợp với **Express.js** là một framework giúp xây dựng các đường dẫn API nhanh chóng và gọn nhẹ.
+**[NHẤN MẠNH] Lý do chọn Node.js là vì nó xử lý đồng thời nhiều yêu cầu mà không bị chặn — rất phù hợp cho ứng dụng có nhiều người dùng truy cập cùng lúc như hệ thống tuyển dụng.**
+
+Giao diện và máy chủ giao tiếp với nhau qua **REST API** — đây là một chuẩn giao tiếp phổ biến trên Internet, hoạt động theo mô hình yêu cầu và phản hồi: giao diện gửi một yêu cầu lên máy chủ, máy chủ xử lý rồi gửi lại kết quả dạng JSON — định dạng dữ liệu văn bản nhẹ và dễ đọc.
+
+**Cơ sở dữ liệu** được xây dựng trên **MySQL** — hệ quản trị cơ sở dữ liệu quan hệ mã nguồn mở, rất ổn định và phổ biến trong doanh nghiệp.
+Để làm việc với MySQL dễ hơn trong code, nhóm em dùng **Sequelize** — một thư viện ORM, viết tắt của Object-Relational Mapping.
+ORM hoạt động như một lớp trung gian: thay vì viết câu lệnh SQL thủ công, lập trình viên làm việc với các đối tượng trong code, và Sequelize tự động chuyển thành câu SQL tương ứng — vừa giảm lỗi, vừa dễ bảo trì.
 
 ---
 
-## [PHẦN 2 — GIẢI PHÁP & TÍNH NĂNG CHÍNH] (~2–3 phút)
-
-Hệ thống Smart Recruitment Platform mà nhóm em xây dựng là một ứng dụng web đầy đủ, phục vụ ba nhóm người dùng chính: **Ứng viên, Nhà tuyển dụng và Quản trị viên.**
-
-Mỗi nhóm có giao diện và quyền hạn riêng biệt. Em xin trình bày năm tính năng cốt lõi của hệ thống.
-
----
+### 2.2 — Năm tính năng cốt lõi
 
 **Tính năng thứ nhất — Tìm kiếm việc làm thông minh với bộ lọc đa tiêu chí.**
 
-Ứng viên có thể tìm kiếm theo nhiều tiêu chí cùng lúc: địa điểm, loại công việc, cấp độ kinh nghiệm, lĩnh vực ngành nghề, và kỹ năng yêu cầu.
-Hệ thống thực hiện tìm kiếm đồng thời trên tiêu đề, mô tả và kỹ năng của tin tuyển dụng.
+Luồng hoạt động như sau: ứng viên nhập từ khóa hoặc chọn các bộ lọc — địa điểm, loại công việc như toàn thời gian hay bán thời gian, cấp độ kinh nghiệm, lĩnh vực ngành và kỹ năng yêu cầu.
+Máy chủ nhận các tiêu chí đó và thực hiện truy vấn đồng thời trên tiêu đề, mô tả và kỹ năng của từng tin tuyển dụng trong cơ sở dữ liệu.
+Kết quả trả về được sắp xếp theo thứ tự mới nhất, và hiển thị từng trang để tránh tải quá nhiều dữ liệu một lúc.
 
-**[NHẤN MẠNH] Điểm khác biệt so với cách làm truyền thống là ứng viên không cần duyệt qua hàng trăm tin — hệ thống tự lọc và sắp xếp kết quả phù hợp nhất lên đầu.**
+**[NHẤN MẠNH] Lợi ích: ứng viên không cần duyệt qua hàng trăm tin — hệ thống tự khoanh vùng những vị trí phù hợp với tiêu chí của họ.**
 
 ---
 
 **Tính năng thứ hai — Quản lý hồ sơ CV theo dạng đa file.**
 
-Ứng viên có thể tải lên nhiều bộ CV khác nhau, định dạng PDF hoặc DOCX, dung lượng tối đa 5MB mỗi file.
-Hệ thống cho phép đánh dấu một CV làm hồ sơ chính để tự động đính kèm khi ứng tuyển.
+Luồng hoạt động: ứng viên tải CV lên hệ thống dưới dạng file PDF hoặc DOCX, tối đa 5MB mỗi file.
+Hệ thống kiểm tra định dạng và dung lượng ngay tại máy chủ trước khi lưu, để đảm bảo chỉ nhận đúng loại file cho phép.
+Ứng viên có thể lưu nhiều CV cho các ngành nghề khác nhau và đánh dấu một CV làm hồ sơ chính — CV này sẽ tự động được đính kèm mỗi khi ứng tuyển mà không cần chọn lại.
+Quản trị viên có thể duyệt hoặc từ chối hồ sơ nhằm kiểm soát chất lượng nội dung trên toàn nền tảng.
 
-Điều đặc biệt là Admin có thể duyệt hoặc từ chối hồ sơ, đảm bảo chất lượng nội dung trên toàn hệ thống.
-
----
-
-**Tính năng thứ ba — Quy trình theo dõi đơn ứng tuyển tự động hóa (ATS).**
-
-Đây là tính năng mà nhóm em tâm huyết nhất.
-
-Khi ứng viên nộp đơn, trạng thái sẽ đi theo một luồng chuẩn:
-*Đã nộp → Đang xem xét → Sơ tuyển → Đang phỏng vấn → Nhận offer hoặc Từ chối.*
-
-**[NHẤN MẠNH] Ứng viên không còn phải đợi email hay điện thoại — họ đăng nhập vào hệ thống là biết ngay mình đang ở bước nào trong quy trình tuyển dụng.**
-
-Nhà tuyển dụng cũng có thể ghi chú nội bộ cho từng ứng viên mà không để lộ thông tin ra ngoài.
+**[NHẤN MẠNH] Lợi ích: ứng viên không còn phải đính kèm file thủ công mỗi lần nộp đơn — hệ thống làm điều đó tự động.**
 
 ---
 
-**Tính năng thứ tư — Dashboard thống kê cho Quản trị viên.**
+**Tính năng thứ ba — Hệ thống theo dõi đơn ứng tuyển theo luồng trạng thái.**
 
-Hệ thống cung cấp một bảng điều khiển tổng quan với đầy đủ số liệu thực tế: tổng số người dùng theo vai trò, tổng số tin tuyển dụng đang hoạt động, số hồ sơ đang chờ duyệt, và số đơn ứng tuyển theo từng trạng thái.
+Đây là tính năng mà nhóm em tâm huyết nhất — thường được gọi là ATS, viết tắt của Applicant Tracking System, tức là hệ thống theo dõi ứng viên.
 
-Nhóm em thiết kế để tất cả các con số này được tính toán song song, nhờ đó trang dashboard mở ra rất nhanh, không bị chậm dù dữ liệu lớn.
+Luồng hoạt động rất rõ ràng: khi ứng viên bấm nộp đơn, hệ thống tạo một bản ghi ứng tuyển và gán trạng thái ban đầu là "Đã nộp".
+Nhà tuyển dụng đăng nhập, xem danh sách đơn, và có thể cập nhật trạng thái lần lượt qua các bước:
+**Đã nộp → Đang xem xét → Sơ tuyển → Đang phỏng vấn → Nhận offer** hoặc **Từ chối.**
+Mỗi lần trạng thái thay đổi, dữ liệu được lưu ngay vào cơ sở dữ liệu cùng với thời điểm cập nhật.
+Nhà tuyển dụng cũng có thể ghi chú nội bộ cho từng ứng viên — ghi chú này chỉ người trong nhóm tuyển dụng mới thấy, ứng viên không thấy được.
+
+**[NHẤN MẠNH] Lợi ích: ứng viên đăng nhập vào tài khoản là biết ngay mình đang ở bước nào — không còn cảnh nộp hồ sơ rồi "bặt vô âm tín" nữa.**
+
+---
+
+**Tính năng thứ tư — Dashboard thống kê tổng quan cho Quản trị viên.**
+
+Quản trị viên có một bảng điều khiển hiển thị toàn bộ trạng thái của hệ thống trong thời gian thực: tổng số người dùng phân theo vai trò, số tin tuyển dụng đang mở, số hồ sơ chờ duyệt, và số đơn ứng tuyển theo từng trạng thái.
+
+Về mặt kỹ thuật, để hiển thị 8 con số thống kê này, nhóm em sử dụng cơ chế **xử lý song song** — tức là máy chủ gửi 8 truy vấn đến cơ sở dữ liệu cùng một lúc thay vì chờ từng cái xong mới làm cái tiếp theo.
+Cách làm truyền thống nếu mỗi truy vấn mất 100 mili-giây thì 8 truy vấn tuần tự sẽ mất 800 mili-giây.
+**[NHẤN MẠNH] Với xử lý song song, tổng thời gian chỉ bằng thời gian của truy vấn lâu nhất — tức là vẫn chỉ khoảng 100 mili-giây — trang dashboard tải nhanh hơn gần 8 lần.**
 
 ---
 
 **Tính năng thứ năm — Hệ thống xác thực và phân quyền bảo mật.**
 
-Toàn bộ hệ thống sử dụng JWT — JSON Web Token — để xác thực người dùng.
-Mật khẩu được mã hóa bằng thuật toán bcrypt với 10 vòng salt, đảm bảo an toàn tuyệt đối, không lưu plaintext bất kỳ đâu.
+Luồng xác thực hoạt động như sau: khi người dùng đăng nhập thành công, máy chủ tạo ra một **JWT — JSON Web Token** — đây là một chuỗi ký tự mã hóa đóng vai trò như "thẻ thông hành kỹ thuật số", chứa thông tin về người dùng và hết hạn sau 7 ngày.
+Mỗi lần giao diện gửi yêu cầu lên máy chủ, thẻ này được đính kèm tự động trong header của yêu cầu.
+Máy chủ kiểm tra chữ ký của thẻ để xác nhận đây là token hợp lệ do hệ thống cấp — không phải do ai giả mạo.
 
-**[NHẤN MẠNH] Mỗi vai trò chỉ được truy cập đúng phần của mình — ứng viên không thể vào trang quản trị, nhà tuyển dụng không thể sửa hồ sơ của ứng viên khác.**
+Về mật khẩu, nhóm em dùng thuật toán **bcrypt** để mã hóa một chiều — nghĩa là mật khẩu được băm thành một chuỗi ngẫu nhiên trước khi lưu vào cơ sở dữ liệu, và không thể giải mã ngược lại.
+Khi đăng nhập, hệ thống băm mật khẩu người dùng nhập vào rồi so sánh với chuỗi đã lưu — không bao giờ lưu mật khẩu gốc ở bất kỳ đâu.
 
----
-
-**Về công nghệ, nhóm em đã lựa chọn stack hiện đại và phổ biến nhất hiện nay:**
-
-- **Frontend:** React 19 với TypeScript và Material-UI — giao diện đẹp, responsive, type-safe
-- **Backend:** Node.js với Express.js — nhẹ, nhanh, phù hợp cho RESTful API
-- **Cơ sở dữ liệu:** MySQL 8.0 với Sequelize ORM — quản lý quan hệ dữ liệu chặt chẽ
-- **API Documentation:** Swagger/OpenAPI — toàn bộ API đều có tài liệu tự động, dễ kiểm thử
-- **Kiểm thử:** Jest cho backend, Vitest cho frontend — đảm bảo chất lượng code
+Về phân quyền, hệ thống chia ba vai trò độc lập: Ứng viên, Nhà tuyển dụng và Quản trị viên.
+Mỗi API endpoint đều có lớp kiểm tra vai trò trước khi xử lý yêu cầu.
+**[NHẤN MẠNH] Kết quả: ứng viên không thể truy cập trang quản trị, nhà tuyển dụng không thể xem hoặc sửa hồ sơ của ứng viên khác — quyền hạn được kiểm soát chặt chẽ ở từng thao tác.**
 
 ---
 
-## [PHẦN 3 — KẾT QUẢ & DEMO] (~1–2 phút)
+## [PHẦN 3 — KẾT QUẢ ĐẠT ĐƯỢC] (~1–2 phút)
 
-Về kết quả đạt được, nhóm em xin báo cáo một số con số cụ thể.
+Thưa quý thầy cô, về kết quả cụ thể, nhóm em xin báo cáo như sau.
 
-**[NHẤN MẠNH] Hệ thống hoàn chỉnh với hơn 25.000 dòng code,** bao gồm cả frontend và backend, được tổ chức theo đúng kiến trúc phân lớp: Controller – Service – Model.
+**[NHẤN MẠNH] Hệ thống hoàn chỉnh với hơn 25.000 dòng code,** được tổ chức theo kiến trúc ba lớp: **Controller – Service – Model.**
+Lớp Controller là cổng vào, tiếp nhận yêu cầu từ giao diện và trả kết quả về.
+Lớp Service chứa toàn bộ logic nghiệp vụ — kiểm tra điều kiện, tính toán, phối hợp các thành phần.
+Lớp Model là nơi định nghĩa cấu trúc dữ liệu và thực hiện truy vấn cơ sở dữ liệu.
+Cách phân lớp này giúp code dễ bảo trì, dễ mở rộng, và dễ kiểm thử từng phần độc lập.
 
-Cơ sở dữ liệu gồm **4 bảng chính** với quan hệ chặt chẽ: Users, Jobs, Resumes, Applications.
-Trong đó, bảng Applications có ràng buộc unique trên cặp (job_id, user_id) để hoàn toàn ngăn chặn việc một ứng viên nộp đơn trùng lặp vào cùng một vị trí.
+Cơ sở dữ liệu gồm **4 bảng chính**: Users lưu thông tin người dùng, Jobs lưu tin tuyển dụng, Resumes lưu hồ sơ CV, và Applications lưu đơn ứng tuyển.
+Bảng Applications có ràng buộc duy nhất trên cặp mã công việc và mã ứng viên — ràng buộc này được đặt ở tầng cơ sở dữ liệu, đảm bảo một ứng viên không thể nộp trùng vào cùng một vị trí dù thử bằng bất kỳ cách nào.
 
-Hệ thống có **tổng cộng hơn 30 API endpoints** đầy đủ chức năng, toàn bộ đều được tài liệu hóa tự động qua Swagger tại địa chỉ `/api/docs`.
+Hệ thống có **hơn 30 API endpoints** phục vụ đầy đủ các chức năng.
+Toàn bộ các endpoint này được tài liệu hóa tự động qua **Swagger** — một công cụ tạo tài liệu API tương tác ngay trên trình duyệt.
+Swagger giống như một cuốn hướng dẫn sử dụng tự cập nhật: khi lập trình viên viết thêm API mới, tài liệu cũng được cập nhật theo ngay lập tức, giúp quá trình kiểm thử và tích hợp nhanh hơn nhiều.
 
-Về kiểm thử, nhóm em đã viết **hơn 30 test cases** bao gồm unit test và integration test, kiểm tra toàn bộ các luồng nghiệp vụ quan trọng: đăng ký, đăng nhập, đăng tin, ứng tuyển, và quản lý trạng thái.
+Về kiểm thử, nhóm em viết **hơn 30 test case** theo hai cấp độ.
+**Unit test** kiểm tra từng hàm nhỏ lẻ — ví dụ hàm mã hóa mật khẩu có cho kết quả đúng không, hàm tạo token có hoạt động chính xác không.
+**Integration test** kiểm tra toàn bộ luồng từ đầu đến cuối — ví dụ gọi API đăng ký, rồi đăng nhập, rồi đăng tin, rồi ứng tuyển — đảm bảo các thành phần khi ghép lại với nhau vẫn hoạt động đúng.
 
-**[NHẤN MẠNH] Một điểm tối ưu đáng chú ý: trang Admin Dashboard sử dụng `Promise.all()` để truy vấn 8 số liệu thống kê song song thay vì tuần tự, giúp thời gian tải trang giảm đáng kể.**
-
-Hệ thống còn hỗ trợ **phân trang linh hoạt** — mặc định 10 kết quả mỗi trang, tối đa 50 — kết hợp với connection pooling của Sequelize để đảm bảo hiệu năng ổn định ngay cả khi lượng dữ liệu tăng cao.
+**[NHẤN MẠNH] Hệ thống còn hỗ trợ phân trang:** khi có hàng nghìn tin tuyển dụng, mỗi lần tải chỉ lấy 10 kết quả một lần thay vì tải tất cả cùng một lúc — giúp tốc độ phản hồi ổn định dù dữ liệu tăng lên bao nhiêu.
+Kết hợp với **connection pooling** — cơ chế tái sử dụng các kết nối cơ sở dữ liệu thay vì mở kết nối mới cho từng yêu cầu — hệ thống xử lý được nhiều người dùng truy cập đồng thời mà không bị quá tải.
 
 ---
 
-## [PHẦN 4 — KẾT LUẬN] (~30 giây)
+## [PHẦN 4 — KẾT LUẬN] (~45 giây)
 
 Thưa quý thầy cô,
 
-Nhóm em đã hoàn thành việc xây dựng một hệ thống tuyển dụng web đầy đủ, từ thiết kế kiến trúc, lập trình frontend và backend, thiết kế cơ sở dữ liệu, đến kiểm thử và tài liệu hóa.
+Nhóm em đã hoàn thành việc xây dựng một hệ thống tuyển dụng web đầy đủ — từ thiết kế kiến trúc, lập trình giao diện và máy chủ, thiết kế cơ sở dữ liệu, đến kiểm thử và tài liệu hóa toàn bộ API.
 
-**[NHẤN MẠNH] Đóng góp chính của nhóm em là xây dựng được một nền tảng tuyển dụng hoàn chỉnh, bảo mật, và có thể triển khai thực tế — giải quyết trực tiếp bài toán quản lý tuyển dụng còn rời rạc, thủ công trong nhiều doanh nghiệp hiện nay.**
+**[NHẤN MẠNH] Đóng góp chính của nhóm em là xây dựng được một nền tảng tuyển dụng hoàn chỉnh, bảo mật, và có thể triển khai thực tế — giải quyết trực tiếp bài toán quy trình tuyển dụng còn rời rạc, thủ công trong nhiều doanh nghiệp hiện nay.**
 
-Về hướng phát triển tiếp theo, nhóm em dự kiến tích hợp tính năng gợi ý việc làm dựa trên AI — phân tích nội dung CV của ứng viên để tự động đề xuất các vị trí phù hợp nhất.
-Ngoài ra, nhóm cũng muốn phát triển thêm ứng dụng di động để tăng khả năng tiếp cận người dùng.
+Về hướng phát triển tiếp theo, nhóm em dự kiến tích hợp tính năng gợi ý việc làm dựa trên AI — tức là hệ thống sẽ phân tích nội dung CV của ứng viên và tự động đề xuất những vị trí phù hợp nhất, thay vì để ứng viên phải tự tìm kiếm.
+Ngoài ra, nhóm muốn phát triển thêm ứng dụng di động để người dùng có thể tìm việc và theo dõi đơn ứng tuyển mọi lúc mọi nơi.
 
-**[NHẤN MẠNH] Chúng em tin rằng Smart Recruitment Platform không chỉ là một bài tập lập trình — đây là một sản phẩm thực sự có thể được triển khai và tạo ra giá trị cho thị trường tuyển dụng Việt Nam.**
+**[NHẤN MẠNH] Chúng em tin rằng Smart Recruitment Platform không chỉ là một bài tập lập trình — đây là một sản phẩm thực sự có thể được triển khai và tạo ra giá trị thiết thực cho thị trường tuyển dụng Việt Nam.**
 
-Em xin trân trọng cảm ơn quý thầy cô đã lắng nghe. Nhóm em rất mong nhận được câu hỏi và nhận xét từ Hội đồng để hoàn thiện thêm đề tài này.
+Em xin trân trọng cảm ơn quý thầy cô đã lắng nghe. Nhóm em rất mong nhận được câu hỏi và nhận xét từ Hội đồng.
 
 ---
 
 > **Ghi chú luyện tập:**
 > - Phần 1 (Mở đầu): ~60 giây
-> - Phần 2 (Giải pháp & Tính năng): ~150 giây
-> - Phần 3 (Kết quả): ~90 giây
-> - Phần 4 (Kết luận): ~30 giây
-> - **Tổng cộng: ~5–6 phút**
+> - Phần 2 (Kiến trúc & Tính năng): ~180 giây
+> - Phần 3 (Kết quả): ~100 giây
+> - Phần 4 (Kết luận): ~45 giây
+> - **Tổng cộng: ~6–7 phút**
 >
-> Các câu **[NHẤN MẠNH]** nên đọc chậm hơn, to hơn một chút và dừng lại 1–2 giây trước và sau câu đó.
+> Các câu **[NHẤN MẠNH]** nên đọc chậm hơn, rõ hơn, và dừng lại 1–2 giây trước và sau câu đó để tạo điểm nhấn.
